@@ -154,8 +154,11 @@ button.secondary:hover { background: #f0ebe3; }
     border: 2px solid #3b2f2f;
     background: #faf7f2;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
+    line-height: 1;
     cursor: pointer;
+    padding: 0;
+    text-align: center;
 }
 
 .bump:active { transform: scale(0.95); }
@@ -284,7 +287,7 @@ function showItem(item, cls, lbl) {
             &middot; <span class="${cls}">${lbl}</span>
         </div>
         <div class="qty-controls">
-            <div class="bump minus" onclick="bump(${item.id},-1,${item.current_quantity})">-</div>
+            <div class="bump minus" onclick="bump(${item.id},-1,${item.current_quantity})">&minus;</div>
             <input type="number" id="qtyIn" value="${item.current_quantity}">
             <div class="bump plus" onclick="bump(${item.id},1,${item.current_quantity})">+</div>
             <button onclick="setQty(${item.id})" style="min-height:38px;padding:8px 14px;">Set</button>
