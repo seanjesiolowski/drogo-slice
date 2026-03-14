@@ -22,4 +22,10 @@ See `.env.example` for defaults.
 
 ## Security
 
+All endpoints (except `/health`) require HTTP Basic Auth. Credentials are set via `ADMIN_USERNAME` and `ADMIN_PASSWORD` environment variables.
+
 ## Testing
+
+```bash
+docker compose exec api pytest
+```
