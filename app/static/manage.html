@@ -160,13 +160,6 @@ button:active { transform: scale(0.98); }
     border-left: 3px solid #3b2f2f;
 }
 
-.entry-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
-}
-
 .entry-name {
     font-family: Georgia, 'Times New Roman', serif;
     font-weight: 600;
@@ -181,11 +174,11 @@ button:active { transform: scale(0.98); }
     line-height: 1.5;
 }
 
-.entry-actions {
+.entry-controls {
     display: flex;
-    gap: 6px;
     align-items: center;
-    flex-shrink: 0;
+    gap: 4px;
+    margin-top: 6px;
 }
 
 .bump {
@@ -195,11 +188,15 @@ button:active { transform: scale(0.98); }
     font-weight: 700;
     cursor: pointer;
     user-select: none;
-    padding: 0 4px;
+    padding: 0 6px;
     color: #3b2f2f;
 }
 
 .bump:hover { color: #6b5b4e; }
+
+.entry-controls .spacer {
+    flex: 1;
+}
 
 .edit-form {
     margin-top: 10px;
@@ -301,11 +298,10 @@ async function loadCategories() {
     } else {
         list.innerHTML = categories.map(c => `
             <div class="entry">
-                <div class="entry-header">
-                    <div>
-                        <div class="entry-name">${esc(c.name)}</div>
-                        <div class="entry-meta">Order: ${c.display_order}</div>
-                    </div>
+                <div class="entry-name">${esc(c.name)}</div>
+                <div class="entry-controls">
+                    <span class="entry-meta">Order: ${c.display_order}</span>
+                    <span class="spacer"></span>
                     <button class="btn-danger-sm" onclick="deleteCategory(${c.id})">Delete</button>
                 </div>
             </div>`).join('');
@@ -370,20 +366,17 @@ async function loadItems() {
 
         return `
         <div class="entry" id="row-${item.id}">
-            <div class="entry-header">
-                <div>
-                    <div class="entry-name">#${item.id} — ${esc(item.name)}</div>
-                    <div class="entry-meta">
-                        <strong>${item.current_quantity}</strong>/${item.par_level} ${esc(item.unit)}
-                        &middot; ${item.category ? esc(item.category.name) : 'N/A'}
-                        &middot; <span class="${cls}">${lbl}</span>
-                    </div>
-                </div>
-                <div class="entry-actions">
-                    <span class="bump" onclick="bumpQty(${item.id},-1,${item.current_quantity})">-</span>
-                    <span class="bump" onclick="bumpQty(${item.id},1,${item.current_quantity})">+</span>
-                    <button class="btn-sm btn-outline" onclick="toggleEdit(${item.id})">Edit</button>
-                </div>
+            <div class="entry-name">#${item.id} — ${esc(item.name)}</div>
+            <div class="entry-meta">
+                <strong>${item.current_quantity}</strong>/${item.par_level} ${esc(item.unit)}
+                &middot; ${item.category ? esc(item.category.name) : 'N/A'}
+                &middot; <span class="${cls}">${lbl}</span>
+            </div>
+            <div class="entry-controls">
+                <span class="bump" onclick="bumpQty(${item.id},-1,${item.current_quantity})">-</span>
+                <span class="bump" onclick="bumpQty(${item.id},1,${item.current_quantity})">+</span>
+                <span class="spacer"></span>
+                <button class="btn-sm btn-outline" onclick="toggleEdit(${item.id})">Edit</button>
             </div>
             <div class="edit-form" id="edit-${item.id}" style="display:none;">
                 <div class="form-group">
