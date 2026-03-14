@@ -18,7 +18,7 @@ from app.database import Base, engine
 from app.dependencies import get_db
 from app.routers import categories, items, reports
 
-# TODO: Is this where the app begins?
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
@@ -77,7 +77,7 @@ app.include_router(items.router)
 app.include_router(categories.router)
 app.include_router(reports.router)
 
-# TODO: Is this necessary? Maybe we can just rely on the database connection for health checks?
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
