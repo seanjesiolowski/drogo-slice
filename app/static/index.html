@@ -1,1016 +1,333 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Drogo Slice">
-    <meta name="theme-color" content="#ffffff">
-    <title>Drogo Slice - Inventory Dashboard</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-        }
-
-        body {
-            font-family: 'Josefin Sans', sans-serif;
-            font-weight: 300;
-            background: #f5f5f4;
-            min-height: 100vh;
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
-            -webkit-text-size-adjust: 100%;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        header {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            border: 1px solid #e8e8e8;
-        }
-
-        h1 {
-            color: #1a1a1a;
-            margin-bottom: 4px;
-            text-align: center;
-            font-size: clamp(1.4rem, 5vw, 1.8rem);
-            word-break: break-word;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            border: 1px solid #e8e8e8;
-            margin-bottom: 12px;
-            -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-
-        .card h2 {
-            color: #1a1a1a;
-            margin-bottom: 16px;
-            text-align: center;
-            font-size: clamp(1rem, 4vw, 1.2em);
-            border-bottom: 2px solid #1a1a1a;
-            padding-bottom: 10px;
-            word-break: break-word;
-        }
-
-        .form-group {
-            margin-bottom: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 100%;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            font-family: inherit;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-color: white;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #1a1a1a;
-            box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-        }
-
-        /* iOS select styling */
-        select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1a1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 8px center;
-            background-size: 24px;
-            padding-right: 36px;
-        }
-
-        button {
-            background: #1a1a1a;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: clamp(0.9rem, 3vw, 1rem);
-            font-weight: 600;
-            width: 100%;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            user-select: none;
-            transition: background-color 0.2s, transform 0.1s;
-            font-family: inherit;
-        }
-
-        button:hover:not(:active), button:focus {
-            background: #333333;
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .item, .category {
-            background: #f8f9fa;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            border-left: 4px solid #1a1a1a;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        .item-name, .category-name {
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-            font-size: clamp(0.95rem, 3vw, 1rem);
-        }
-
-        .item-details {
-            font-size: clamp(0.8rem, 2.5vw, 0.85em);
-            color: #666;
-            line-height: 1.5;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        .status-critical {
-            color: #e74c3c;
-            font-weight: 600;
-        }
-
-        .status-low {
-            color: #f39c12;
-            font-weight: 600;
-        }
-
-        .status-ok {
-            color: #27ae60;
-            font-weight: 600;
-        }
-
-        .loading {
-            color: #999;
-            font-style: italic;
-            text-align: center;
-            padding: 20px 12px;
-        }
-
-        /* QR Scanner */
-        .qr-card {
-            margin-bottom: 12px;
-        }
-
-        #qr-reader {
-            margin: 12px 0;
-            width: 100%;
-            max-width: 100%;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        .qr-btn-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .qr-btn-group button {
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .btn-outline {
-            background: white;
-            color: #1a1a1a;
-            border: 2px solid #1a1a1a;
-        }
-
-        .btn-outline:hover:not(:active), .btn-outline:focus {
-            background: #f5f5f4;
-        }
-
-        .scan-result {
-            display: none;
-            background: #f8f9fa;
-            border-left: 4px solid #1a1a1a;
-            border-radius: 6px;
-            padding: 12px;
-            margin-top: 12px;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-        }
-
-        .scan-result .item-name {
-            font-size: 1.05em;
-            margin-bottom: 8px;
-        }
-
-        .scan-result .item-details {
-            line-height: 1.6;
-        }
-
-        .scan-result-error {
-            border-left-color: #e74c3c;
-        }
-
-        .scan-result-actions {
-            margin-top: 10px;
-        }
-
-        /* Quick qty update area */
-        .scan-qty-update {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #ddd;
-            flex-wrap: wrap;
-        }
-
-        .scan-qty-update input {
-            width: auto;
-            min-width: 80px;
-            flex: 0 1 100px;
-            padding: 10px 12px;
-        }
-
-        .scan-qty-update button {
-            flex: 1;
-            min-width: 100px;
-            min-height: 44px;
-        }
-
-        /* Danger buttons */
-        .btn-danger {
-            background: white;
-            color: #e74c3c;
-            border: 2px solid #e74c3c;
-        }
-
-        .btn-danger:hover:not(:active), .btn-danger:focus {
-            background: #fef0ef;
-        }
-
-        .btn-danger-sm {
-            background: transparent;
-            color: #e74c3c;
-            border: 1px solid #e74c3c;
-            padding: 8px 12px;
-            font-size: clamp(0.75rem, 2vw, 0.8em);
-            width: auto;
-            border-radius: 4px;
-            min-height: 44px;
-        }
-
-        .btn-danger-sm:hover:not(:active), .btn-danger-sm:focus {
-            background: #fef0ef;
-        }
-
-        /* Small outline button */
-        .btn-outline-sm {
-            background: transparent;
-            color: #1a1a1a;
-            border: 1px solid #1a1a1a;
-            padding: 8px 12px;
-            font-size: clamp(0.75rem, 2vw, 0.8em);
-            width: auto;
-            border-radius: 4px;
-            min-height: 44px;
-        }
-
-        .btn-outline-sm:hover:not(:active), .btn-outline-sm:focus {
-            background: #f5f5f4;
-        }
-
-        /* Bump buttons */
-        .bump-btns {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            flex-shrink: 0;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        .bump-btn {
-            width: 44px;
-            height: 44px;
-            min-width: 44px;
-            min-height: 44px;
-            border-radius: 50%;
-            border: 2px solid #1a1a1a;
-            background: white;
-            color: #1a1a1a;
-            font-size: 1.1em;
-            font-weight: 700;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            line-height: 1;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-
-        .bump-btn:hover:not(:active), .bump-btn:focus {
-            background: #1a1a1a;
-            color: white;
-        }
-
-        .bump-btn:active {
-            transform: scale(0.9);
-        }
-
-        .bump-btn.bump-minus {
-            border-color: #e74c3c;
-            color: #e74c3c;
-        }
-
-        .bump-btn.bump-minus:hover:not(:active), .bump-btn.bump-minus:focus {
-            background: #e74c3c;
-            color: white;
-        }
-
-        /* Item display row */
-        .item-row-main {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .item-row-info {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .item-row-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            min-width: auto;
-        }
-
-        /* Inline edit form */
-        .item-edit-form {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .item-edit-form input,
-        .item-edit-form select {
-            padding: 10px;
-            font-size: 0.95em;
-            width: 100%;
-        }
-
-        .item-edit-form .btn-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .item-edit-form .btn-row button {
-            flex: 1;
-            min-width: 120px;
-            padding: 10px 12px;
-            font-size: 0.9em;
-            min-height: 44px;
-        }
-
-        /* Category row with delete */
-        .category-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .category-row .category-info {
-            flex: 1;
-            min-width: 150px;
-        }
-
-        /* Details/summary styling */
-        details {
-            margin-top: 10px;
-        }
-
-        details summary {
-            cursor: pointer;
-            color: #555;
-            font-size: 0.9em;
-            padding: 10px 0;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        details summary:hover, details summary:focus {
-            color: #1a1a1a;
-            outline: none;
-        }
-
-        details[open] summary {
-            margin-bottom: 10px;
-        }
-
-        /* Reassign row */
-        .reassign-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-top: 8px;
-            flex-wrap: wrap;
-        }
-
-        .reassign-row input {
-            min-width: 80px;
-            flex: 0 1 100px;
-            padding: 10px;
-            font-size: 0.9em;
-        }
-
-        .reassign-row button {
-            flex: 1;
-            padding: 10px 12px;
-            font-size: 0.85em;
-            min-height: 44px;
-            min-width: 140px;
-        }
-
-        /* Small screens (mobile-first) */
-        @media (max-width: 480px) {
-            body { padding: 8px; }
-            header { padding: 12px; }
-            .card { padding: 12px; }
-            .item, .category { padding: 10px; }
-            .bump-btns { justify-content: center; width: 100%; margin-top: 8px; }
-            .item-row-main { flex-direction: column; }
-            .item-row-actions { width: 100%; justify-content: center; }
-        }
-
-        /* Medium screens (tablet) */
-        @media (min-width: 481px) and (max-width: 768px) {
-            body { padding: 12px; }
-            header { padding: 16px; }
-            .card { padding: 16px; }
-        }
-
-        /* Large screens (desktop) */
-        @media (min-width: 769px) {
-            body { padding: 20px; }
-            header { padding: 24px; }
-            h1 { font-size: 2em; }
-            .card { padding: 20px; }
-            .card h2 { font-size: 1.3em; }
-            .form-group { flex-direction: row; gap: 12px; }
-            input, select { flex: 1; width: auto; padding: 12px; font-size: 0.95em; }
-            .item-edit-form .form-group:last-of-type { flex-direction: column; }
-            .item-edit-form .form-group:last-of-type select { flex: none; width: 100%; }
-            button { width: auto; padding: 12px 24px; font-size: 0.95em; }
-            .qr-card { margin-bottom: 20px; }
-            #qr-reader { max-width: 100%; max-height: 400px; }
-            .qr-btn-group button { flex: none; min-width: 150px; }
-            .item-row-main { flex-wrap: nowrap; }
-            .item-row-actions { flex-wrap: nowrap; }
-            .bump-btns { justify-content: flex-end; width: auto; margin-top: 0; }
-            .reassign-row { flex-wrap: nowrap; }
-        }
-
-        /* High DPI screens */
-        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-            input, select, button {
-                border-width: 1px;
-            }
-        }
-
-        /* Print styles */
-        @media print {
-            body { background: white; }
-            .card { page-break-inside: avoid; box-shadow: none; }
-            button { display: none; }
-        }
-
-        /* Landscape mode on mobile */
-        @media (orientation: landscape) and (max-height: 500px) {
-            header { margin-bottom: 8px; }
-            .card { margin-bottom: 8px; padding: 12px; }
-        }
-
-        /* Support for dark mode preference */
-        @media (prefers-color-scheme: dark) {
-            body { background: #1a1a1a; color: #f5f5f4; }
-            .card, header, .item, .category { background: #2a2a2a; border-color: #404040; }
-            h1, .card h2, .item-name, .category-name { color: #f5f5f4; }
-            .item-details { color: #b0b0b0; }
-            .btn-outline { border-color: #f5f5f4; color: #f5f5f4; }
-            .btn-outline:hover:not(:active) { background: #363636; }
-            input, select { background: #1a1a1a; color: #f5f5f4; border-color: #404040; }
-            input:focus, select:focus { border-color: #f5f5f4; }
-        }
-
-        /* Accessibility: High contrast mode */
-        @media (prefers-contrast: more) {
-            input, select, button { border-width: 2px; }
-            button { font-weight: 700; }
-        }
-
-        /* Accessibility: Reduced motion */
-        @media (prefers-reduced-motion: reduce) {
-            * { animation: none !important; transition: none !important; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drogo Slice</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+
+:root{
+--cream:#f6f3eb;
+--paper:#fbf8f2;
+--forest:#2f4f3a;
+--forest-soft:#4e6b57;
+--coffee:#3b2f2f;
+--line:#e4dfd4;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Inter,system-ui,sans-serif;
+background:var(--cream);
+color:var(--coffee);
+padding:20px;
+max-width:620px;
+margin:auto;
+}
+
+header{
+margin-bottom:18px;
+}
+
+h1{
+font-family:Georgia,serif;
+font-size:1.6rem;
+margin-bottom:4px;
+}
+
+.subtitle{
+font-size:.85rem;
+color:#6a6258;
+}
+
+.section{
+padding:16px 0;
+border-top:1px solid var(--line);
+}
+
+.section-title{
+font-size:.8rem;
+letter-spacing:.08em;
+text-transform:uppercase;
+margin-bottom:12px;
+color:#6a6258;
+}
+
+button{
+background:var(--forest);
+color:white;
+border:1px solid var(--forest);
+padding:10px 16px;
+font-size:.9rem;
+cursor:pointer;
+border-radius:4px;
+}
+
+button.secondary{
+background:transparent;
+color:var(--forest);
+}
+
+button-row{
+display:flex;
+gap:8px;
+}
+
+#qr-reader{
+border:1px solid var(--line);
+border-radius:6px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.result{
+margin-top:14px;
+padding:14px;
+background:var(--paper);
+border:1px solid var(--line);
+border-radius:6px;
+}
+
+.item-name{
+font-weight:600;
+margin-bottom:6px;
+}
+
+.item-meta{
+font-family:"JetBrains Mono", monospace;
+font-size:.85rem;
+line-height:1.6;
+}
+
+.status-ok{color:var(--forest);}
+.status-low{color:#b07a28;}
+.status-critical{color:#c33;}
+
+.qty-controls{
+display:flex;
+gap:8px;
+margin-top:12px;
+align-items:center;
+}
+
+.bump{
+width:34px;
+height:34px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:50%;
+border:1px solid var(--forest);
+background:white;
+font-weight:600;
+cursor:pointer;
+}
+
+.bump.minus{
+border-color:#c33;
+color:#c33;
+}
+
+input[type=number]{
+width:70px;
+padding:6px;
+border:1px solid var(--line);
+border-radius:4px;
+font-family:"JetBrains Mono", monospace;
+}
+
+.btn-group{
+display:flex;
+gap:8px;
+margin-bottom:10px;
+}
+
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <h1>Drogo Slice</h1>
-            <nav style="text-align:center; margin-top:8px;">
-                <a href="/manage" style="display:inline-block; padding:8px 20px; background:#1a1a1a; color:white; text-decoration:none; border-radius:8px; font-weight:400;">🛠️</a>
-            </nav>
-        </header>
 
-        <!-- QR Scanner Card -->
-        <div class="card qr-card">
-            <h2>📷</h2>
-            <div class="qr-btn-group">
-                <button id="qrStartBtn" onclick="startScanner()">Scan QR Code</button>
-                <button id="qrStopBtn" class="btn-outline" onclick="stopScanner()" style="display:none;">Stop Scanner</button>
-            </div>
-            <div id="qr-reader"></div>
-            <div id="scanResult" class="scan-result">
-                <div id="scanResultContent"></div>
-                <div class="scan-result-actions">
-                    <button class="btn-outline" onclick="closeScanResult()" style="width:auto;">Dismiss</button>
-                </div>
-            </div>
-        </div>
+<header>
+<h1>Drogo Slice</h1>
+<div class="subtitle">inventory scanner</div>
+</header>
 
+<div class="section">
 
-    </div>
+<div class="section-title">Scan Item</div>
 
-    <script>
-        const API_URL = '';
+<div class="btn-group">
+<button id="qrStartBtn" onclick="startScanner()">Scan</button>
+<button id="qrStopBtn" class="secondary" onclick="stopScanner()" style="display:none;">Stop</button>
+</div>
 
-        // Global state
-        let allCategories = [];
+<div id="qr-reader"></div>
 
-        window.addEventListener('DOMContentLoaded', () => {
-                loadCategories();
-            // no item list on scanner page
-        });
+</div>
 
-        // ─── Categories ───
-        async function loadCategories() {
-            try {
-                const res = await fetch(`${API_URL}/api/categories`);
-                allCategories = await res.json();
+<div class="section">
 
-                        const list = document.getElementById('categoriesList');
-                if (list) {
-                    if (allCategories.length === 0) {
-                        list.innerHTML = '<p class="loading">No categories yet</p>';
-                    } else {
-                        list.innerHTML = allCategories.map(cat => `
-                            <div class="category">
-                                <div class="category-row">
-                                    <div class="category-info">
-                                        <div class="category-name">${esc(cat.name)}</div>
-                                        <div class="item-details">Order: ${cat.display_order}</div>
-                                    </div>
-                                    <button class="btn-danger-sm" onclick="deleteCategory(${cat.id})" title="Delete category">✕</button>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-                }
+<div class="section-title">Last Scan</div>
 
-            } catch (err) {
-                console.error('Failed to load categories:', err);
-            }
-        }
+<div id="scanResult" class="result" style="display:none;">
+<div id="scanResultContent"></div>
+</div>
 
-        async function deleteCategory(id) {
-            if (!confirm('Delete this category? Items in it may be affected.')) return;
-            try {
-                const res = await fetch(`${API_URL}/api/categories/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    loadCategories();
-                    loadItems();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to delete category');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+</div>
 
-        // ─── Items ───
-        async function loadItems() {
-            try {
-                const res = await fetch(`${API_URL}/api/items`);
-                const items = await res.json();
+<script>
 
-                const list = document.getElementById('allItemsList');
-                if (!list) return; // scanner page doesn't have item list
-                if (items.length === 0) {
-                    list.innerHTML = '<p class="loading">No items yet</p>';
-                } else {
-                    list.innerHTML = items.map(item => {
-                        const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
-                        let statusClass, statusLabel;
-                        if (ratio <= 0.25) { statusClass = 'status-critical'; statusLabel = 'CRITICAL'; }
-                        else if (ratio <= 0.5) { statusClass = 'status-low'; statusLabel = 'LOW'; }
-                        else { statusClass = 'status-ok'; statusLabel = 'OK'; }
+const API_URL="";
 
-                        const catOptions = allCategories.map(c =>
-                            `<option value="${c.id}" ${c.id === item.category_id ? 'selected' : ''}>${esc(c.name)}</option>`
-                        ).join('');
+let html5Qrcode=null;
 
-                        return `
-                        <div class="item" id="item-row-${item.id}">
-                            <div class="item-row-main">
-                                <div class="item-row-info">
-                                    <div class="item-name">#${item.id} — ${esc(item.name)}</div>
-                                    <div class="item-details">
-                                        <strong>${item.current_quantity}</strong>/${item.par_level} ${esc(item.unit)}
-                                        • ${item.category ? esc(item.category.name) : 'N/A'}
-                                        • <span class="${statusClass}">${statusLabel}</span>
-                                    </div>
-                                </div>
-                                <div class="item-row-actions">
-                                    <div class="bump-btns">
-                                        <button class="bump-btn bump-minus" onclick="bumpQty(${item.id}, -1, ${item.current_quantity})" title="-1">−</button>
-                                        <button class="bump-btn" onclick="bumpQty(${item.id}, 1, ${item.current_quantity})" title="+1">+</button>
-                                    </div>
-                                    <button class="btn-outline-sm" onclick="toggleItemEdit(${item.id})">Edit</button>
-                                </div>
-                            </div>
-                            <div class="item-edit-form" id="item-edit-${item.id}" style="display:none;">
-                                <div class="form-group">
-                                    <input type="text" id="edit-name-${item.id}" value="${esc(item.name)}" placeholder="Name">
-                                    <input type="text" id="edit-unit-${item.id}" value="${esc(item.unit)}" placeholder="Unit">
-                                </div>
-                                <div class="form-group">
-                                    <input type="number" id="edit-qty-${item.id}" value="${item.current_quantity}" placeholder="Qty" min="0">
-                                    <input type="number" id="edit-par-${item.id}" value="${item.par_level}" placeholder="Par" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <select id="edit-cat-${item.id}">${catOptions}</select>
-                                </div>
-                                <div class="reassign-row">
-                                    <input type="number" id="reassign-id-${item.id}" placeholder="New #" min="1">
-                                    <button class="btn-outline-sm" onclick="reassignItemId(${item.id})">Reassign QR Label</button>
-                                </div>
-                                <div class="btn-row">
-                                    <button onclick="saveItemEdits(${item.id})">Save</button>
-                                    <button class="btn-danger" onclick="deleteItem(${item.id})">Delete</button>
-                                </div>
-                            </div>
-                        </div>`;
-                    }).join('');
-                }
-            } catch (err) {
-                console.error('Failed to load items:', err);
-            }
-        }
+function startScanner(){
 
-        function toggleItemEdit(id) {
-            const form = document.getElementById(`item-edit-${id}`);
-            form.style.display = form.style.display === 'none' ? '' : 'none';
-        }
+document.getElementById("qrStartBtn").style.display="none";
+document.getElementById("qrStopBtn").style.display="inline-block";
 
-        async function bumpQty(id, delta, currentQty) {
-            const newQty = Math.max(0, currentQty + delta);
-            try {
-                const res = await fetch(`${API_URL}/api/items/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ current_quantity: newQty })
-                });
-                if (res.ok) {
-                    loadItems();
-                }
-            } catch (err) {
-                console.error('Bump failed:', err);
-            }
-        }
+html5Qrcode=new Html5Qrcode("qr-reader");
 
-        async function saveItemEdits(id) {
-            const payload = {
-                name: document.getElementById(`edit-name-${id}`).value.trim(),
-                unit: document.getElementById(`edit-unit-${id}`).value.trim(),
-                current_quantity: parseFloat(document.getElementById(`edit-qty-${id}`).value),
-                par_level: parseFloat(document.getElementById(`edit-par-${id}`).value),
-                category_id: parseInt(document.getElementById(`edit-cat-${id}`).value),
-            };
+html5Qrcode.start(
+{facingMode:"environment"},
+{fps:10,qrbox:{width:250,height:250}},
+onScanSuccess
+).catch(err=>{
 
-            try {
-                const res = await fetch(`${API_URL}/api/items/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    loadItems();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to save');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+stopScanner();
+showError("Camera error");
 
-        async function reassignItemId(oldId) {
-            const newId = parseInt(document.getElementById(`reassign-id-${oldId}`).value);
-            if (isNaN(newId) || newId <= 0) {
-                alert('Enter a valid new ID');
-                return;
-            }
-            if (!confirm(`Reassign item #${oldId} to #${newId}?`)) return;
+});
 
-            try {
-                const res = await fetch(`${API_URL}/api/items/${oldId}/reassign?new_id=${newId}`, {
-                    method: 'POST'
-                });
-                if (res.ok) {
-                    loadItems();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to reassign');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+}
 
-        async function deleteItem(id) {
-            if (!confirm(`Delete item #${id}? This cannot be undone.`)) return;
-            try {
-                const res = await fetch(`${API_URL}/api/items/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    loadItems();
-                    closeScanResult();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to delete');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+function stopScanner(){
 
-        // ─── QR Scanner ───
-        let html5Qrcode = null;
+document.getElementById("qrStartBtn").style.display="inline-block";
+document.getElementById("qrStopBtn").style.display="none";
 
-        function startScanner() {
-            closeScanResult();
-            document.getElementById('qrStartBtn').style.display = 'none';
-            document.getElementById('qrStopBtn').style.display = '';
+if(html5Qrcode){
+html5Qrcode.stop().catch(()=>{});
+}
 
-            html5Qrcode = new Html5Qrcode('qr-reader');
-            html5Qrcode.start(
-                { facingMode: 'environment' },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                onScanSuccess
-            ).catch(err => {
-                console.error('Camera error:', err);
-                stopScanner();
-                showScanError('Could not access camera: ' + err);
-            });
-        }
+}
 
-        function stopScanner() {
-            document.getElementById('qrStartBtn').style.display = '';
-            document.getElementById('qrStopBtn').style.display = 'none';
+async function onScanSuccess(decodedText){
 
-            if (html5Qrcode && html5Qrcode.isScanning) {
-                html5Qrcode.stop().catch(() => {});
-            }
-            html5Qrcode = null;
-        }
+stopScanner();
 
-        async function onScanSuccess(decodedText) {
-            stopScanner();
+const id=parseInt(decodedText);
 
-            const itemId = parseInt(decodedText.trim(), 10);
-            if (isNaN(itemId) || itemId <= 0) {
-                showScanError('Invalid QR code. Expected an item ID (number), got: "' + decodedText + '"');
-                return;
-            }
+if(!id){
+showError("Invalid QR code");
+return;
+}
 
-            try {
-                const res = await fetch(`${API_URL}/api/items/${itemId}`);
-                if (!res.ok) {
-                    if (res.status === 404) {
-                        showScanError('Item #' + itemId + ' not found.');
-                    } else {
-                        showScanError('API error (status ' + res.status + ')');
-                    }
-                    return;
-                }
-                const item = await res.json();
-                const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
-                let statusClass, statusLabel;
-                if (ratio <= 0.25) { statusClass = 'status-critical'; statusLabel = 'CRITICAL'; }
-                else if (ratio <= 0.5) { statusClass = 'status-low'; statusLabel = 'LOW'; }
-                else { statusClass = 'status-ok'; statusLabel = 'OK'; }
+try{
 
-                const catOptions = allCategories.map(c =>
-                    `<option value="${c.id}" ${c.id === item.category_id ? 'selected' : ''}>${esc(c.name)}</option>`
-                ).join('');
+const res=await fetch(`${API_URL}/api/items/${id}`);
 
-                const resultEl = document.getElementById('scanResult');
-                const contentEl = document.getElementById('scanResultContent');
-                resultEl.classList.remove('scan-result-error');
-                contentEl.innerHTML = `
-                    <div class="item-name">#${item.id} — ${esc(item.name)}</div>
-                    <div class="item-details">
-                        Quantity: <strong>${item.current_quantity}</strong> / ${item.par_level} ${esc(item.unit)}<br>
-                        Category: ${item.category ? esc(item.category.name) : 'N/A'}<br>
-                        Stock: <span class="${statusClass}">${statusLabel}</span>
-                    </div>
-                    <div class="scan-qty-update">
-                        <button class="bump-btn bump-minus" onclick="bumpQtyScanned(${item.id}, -1, ${item.current_quantity})" title="-1">−</button>
-                        <button class="bump-btn" onclick="bumpQtyScanned(${item.id}, 1, ${item.current_quantity})" title="+1">+</button>
-                        <input type="number" id="scanQtyInput" value="${item.current_quantity}" min="0" style="margin-left:8px;">
-                        <button onclick="quickUpdateQty(${item.id})">Set</button>
-                    </div>
-                    <details>
-                        <summary>Edit Details / Delete</summary>
-                        <div class="item-edit-form">
-                            <div class="form-group">
-                                <input type="text" id="scan-edit-name" value="${esc(item.name)}" placeholder="Name">
-                                <input type="text" id="scan-edit-unit" value="${esc(item.unit)}" placeholder="Unit">
-                            </div>
-                            <div class="form-group">
-                                <input type="number" id="scan-edit-par" value="${item.par_level}" placeholder="Par level" min="0">
-                            </div>
-                            <div class="form-group">
-                                <select id="scan-edit-cat">${catOptions}</select>
-                            </div>
-                            <div class="btn-row">
-                                <button onclick="saveScannedItemEdits(${item.id})">Save</button>
-                                <button class="btn-danger" onclick="deleteItem(${item.id})">Delete</button>
-                            </div>
-                        </div>
-                    </details>
-                `;
-                resultEl.style.display = 'block';
-            } catch (err) {
-                showScanError('Failed to fetch item: ' + err.message);
-            }
-        }
+if(!res.ok){
+showError("Item not found");
+return;
+}
 
-        async function quickUpdateQty(id) {
-            const qty = parseFloat(document.getElementById('scanQtyInput').value);
-            if (isNaN(qty) || qty < 0) {
-                alert('Enter a valid quantity');
-                return;
-            }
+const item=await res.json();
 
-            try {
-                const res = await fetch(`${API_URL}/api/items/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ current_quantity: qty })
-                });
-                if (res.ok) {
-                    const item = await res.json();
-                    // Re-render scan result with updated data
-                    onScanSuccess(String(id));
-                    loadItems();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to update');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+let ratio=item.par_level>0?item.current_quantity/item.par_level:1;
 
-        async function bumpQtyScanned(id, delta, currentQty) {
-            const newQty = Math.max(0, currentQty + delta);
-            try {
-                const res = await fetch(`${API_URL}/api/items/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ current_quantity: newQty })
-                });
-                if (res.ok) {
-                    onScanSuccess(String(id));
-                    loadItems();
-                }
-            } catch (err) {
-                console.error('Bump failed:', err);
-            }
-        }
+let status="status-ok";
+let label="OK";
 
-        async function saveScannedItemEdits(id) {
-            const payload = {
-                name: document.getElementById('scan-edit-name').value.trim(),
-                unit: document.getElementById('scan-edit-unit').value.trim(),
-                par_level: parseFloat(document.getElementById('scan-edit-par').value),
-                category_id: parseInt(document.getElementById('scan-edit-cat').value),
-            };
+if(ratio<=0.25){status="status-critical";label="CRITICAL"}
+else if(ratio<=0.5){status="status-low";label="LOW"}
 
-            try {
-                const res = await fetch(`${API_URL}/api/items/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    onScanSuccess(String(id));
-                    loadItems();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to save');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+renderItem(item,status,label);
 
-        function showScanError(msg) {
-            const resultEl = document.getElementById('scanResult');
-            const contentEl = document.getElementById('scanResultContent');
-            resultEl.classList.add('scan-result-error');
-            contentEl.innerHTML = '<div class="item-details" style="color:#e74c3c;">❌ ' + msg + '</div>';
-            resultEl.style.display = 'block';
-        }
+}catch(e){
 
-        function closeScanResult() {
-            document.getElementById('scanResult').style.display = 'none';
-        }
+showError("API error");
 
-        function esc(str) {
-            const d = document.createElement('div');
-            d.textContent = str;
-            return d.innerHTML;
-        }
-    </script>
+}
+
+}
+
+function renderItem(item,status,label){
+
+const html=`
+<div class="item-name">#${item.id} — ${item.name}</div>
+
+<div class="item-meta">
+qty ${item.current_quantity}/${item.par_level} ${item.unit}<br>
+status <span class="${status}">${label}</span>
+</div>
+
+<div class="qty-controls">
+
+<div class="bump minus" onclick="bump(${item.id},-1,${item.current_quantity})">−</div>
+<div class="bump" onclick="bump(${item.id},1,${item.current_quantity})">+</div>
+
+<input type="number" id="qtyInput" value="${item.current_quantity}">
+
+<button onclick="setQty(${item.id})">set</button>
+
+</div>
+`;
+
+document.getElementById("scanResultContent").innerHTML=html;
+document.getElementById("scanResult").style.display="block";
+
+}
+
+async function bump(id,delta,current){
+
+const newQty=Math.max(0,current+delta);
+
+await fetch(`${API_URL}/api/items/${id}`,{
+method:"PATCH",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({current_quantity:newQty})
+});
+
+onScanSuccess(String(id));
+
+}
+
+async function setQty(id){
+
+const qty=parseFloat(document.getElementById("qtyInput").value);
+
+await fetch(`${API_URL}/api/items/${id}`,{
+method:"PATCH",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({current_quantity:qty})
+});
+
+onScanSuccess(String(id));
+
+}
+
+function showError(msg){
+
+document.getElementById("scanResultContent").innerHTML="<span style='color:#c33'>"+msg+"</span>";
+document.getElementById("scanResult").style.display="block";
+
+}
+
+</script>
+
 </body>
 </html>
