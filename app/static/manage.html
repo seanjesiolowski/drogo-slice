@@ -189,22 +189,17 @@ button:active { transform: scale(0.98); }
 }
 
 .bump {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid #ddd5c8;
-    background: #faf7f2;
-    color: #3b2f2f;
-    font-size: 1.1rem;
+    background: none;
+    border: none;
+    font-size: 1.4rem;
     font-weight: 700;
-    line-height: 1;
-    display: grid;
-    place-items: center;
     cursor: pointer;
     user-select: none;
+    padding: 0 4px;
+    color: #3b2f2f;
 }
 
-.bump:hover { border-color: #3b2f2f; }
+.bump:hover { color: #6b5b4e; }
 
 .edit-form {
     margin-top: 10px;
@@ -385,8 +380,8 @@ async function loadItems() {
                     </div>
                 </div>
                 <div class="entry-actions">
-                    <div class="bump" onclick="bumpQty(${item.id},-1,${item.current_quantity})">&minus;</div>
-                    <div class="bump" onclick="bumpQty(${item.id},1,${item.current_quantity})">+</div>
+                    <span class="bump" onclick="bumpQty(${item.id},-1,${item.current_quantity})">-</span>
+                    <span class="bump" onclick="bumpQty(${item.id},1,${item.current_quantity})">+</span>
                     <button class="btn-sm btn-outline" onclick="toggleEdit(${item.id})">Edit</button>
                 </div>
             </div>

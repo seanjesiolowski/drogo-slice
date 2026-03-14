@@ -145,23 +145,17 @@ button.secondary:hover { background: #f0ebe3; }
 }
 
 .bump {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    border: 2px solid #3b2f2f;
-    background: #faf7f2;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
     font-weight: 700;
-    font-size: 1.3rem;
-    line-height: 1;
-    display: grid;
-    place-items: center;
     cursor: pointer;
     user-select: none;
+    padding: 0 6px;
+    color: #3b2f2f;
 }
 
-.bump:active { transform: scale(0.95); }
-.bump.minus { border-color: #b5372a; color: #b5372a; }
-.bump.plus { border-color: #4a7c3f; color: #4a7c3f; }
+.bump:hover { color: #6b5b4e; }
 
 input[type=number] {
     width: 72px;
@@ -285,9 +279,9 @@ function showItem(item, cls, lbl) {
             &middot; <span class="${cls}">${lbl}</span>
         </div>
         <div class="qty-controls">
-            <div class="bump minus" onclick="bump(${item.id},-1,${item.current_quantity})">&minus;</div>
+            <span class="bump" onclick="bump(${item.id},-1,${item.current_quantity})">-</span>
             <input type="number" id="qtyIn" value="${item.current_quantity}">
-            <div class="bump plus" onclick="bump(${item.id},1,${item.current_quantity})">+</div>
+            <span class="bump" onclick="bump(${item.id},1,${item.current_quantity})">+</span>
             <button onclick="setQty(${item.id})" style="min-height:38px;padding:8px 14px;">Set</button>
         </div>`;
     document.getElementById('scanResult').style.display = 'block';
