@@ -19,3 +19,5 @@ App runs at `http://localhost:8000`. API docs at `/docs`.
 | `ADMIN_PASSWORD` | Basic auth password |
 
 See `.env.example` for defaults.
+
+## Testing
