@@ -2,7 +2,7 @@
 
 Shop inventory tracker built with FastAPI and PostgreSQL.
 
-## Running locally
+## Running locally (Docker installed and running)
 
 ```bash
 docker compose up --build
