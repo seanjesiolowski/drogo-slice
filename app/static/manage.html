@@ -1,547 +1,507 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Drogo Slice">
-    <meta name="theme-color" content="#ffffff">
-    <title>Drogo Slice - Manage Inventory</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drogo Slice - Manage</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-        html, body {
-            width: 100%;
-            height: 100%;
-        }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0ebe3;
+    color: #2c2420;
+    min-height: 100vh;
+    padding: 16px;
+}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f5f5f4;
-            min-height: 100vh;
-            padding: 12px;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
-            -webkit-text-size-adjust: 100%;
-        }
+.container {
+    max-width: 540px;
+    margin: 0 auto;
+}
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            width: 100%;
-        }
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    background: #faf7f2;
+    border: 1px solid #ddd5c8;
+    border-radius: 8px;
+}
 
-        header {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            border: 1px solid #e8e8e8;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3b2f2f;
+}
 
-        h1 {
-            color: #1a1a1a;
-            margin-bottom: 4px;
-            font-size: clamp(1.4rem, 5vw, 1.8rem);
-            word-break: break-word;
-        }
+nav a {
+    font-size: 0.85rem;
+    color: #5a4a3a;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+}
 
-        nav a {
-            font-size: 0.9em;
-            color: #1a1a1a;
-            text-decoration: none;
-            margin-left: 12px;
-        }
+nav a:hover { border-bottom-color: #5a4a3a; }
 
-        nav a:hover {
-            text-decoration: underline;
-        }
+.card {
+    background: #faf7f2;
+    border: 1px solid #ddd5c8;
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 14px;
+}
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            border: 1px solid #e8e8e8;
-            margin-bottom: 12px;
-            -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
+.card h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #3b2f2f;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd5c8;
+}
 
-        .card h2 {
-            color: #1a1a1a;
-            margin-bottom: 16px;
-            font-size: clamp(1rem, 4vw, 1.2em);
-            border-bottom: 2px solid #1a1a1a;
-            padding-bottom: 10px;
-            word-break: break-word;
-        }
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
 
-        .form-group {
-            margin-bottom: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 100%;
-        }
+input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd5c8;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: inherit;
+    background: #fff;
+}
 
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            font-family: inherit;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-color: white;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
+input:focus, select:focus {
+    outline: none;
+    border-color: #3b2f2f;
+}
 
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #1a1a1a;
-            box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-        }
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b2f2f' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 20px;
+    padding-right: 32px;
+}
 
-        select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1a1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 8px center;
-            background-size: 24px;
-            padding-right: 36px;
-        }
+button {
+    background: #3b2f2f;
+    color: #faf7f2;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        button {
-            background: #1a1a1a;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: clamp(0.9rem, 3vw, 1rem);
-            font-weight: 600;
-            width: 100%;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            user-select: none;
-            transition: background-color 0.2s, transform 0.1s;
-            font-family: inherit;
-        }
+button:hover { background: #4e3e3e; }
+button:active { transform: scale(0.98); }
 
-        button:hover:not(:active), button:focus {
-            background: #333333;
-        }
+.btn-sm {
+    width: auto;
+    min-height: 34px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
 
-        button:active {
-            transform: scale(0.98);
-        }
+.btn-outline {
+    background: transparent;
+    color: #3b2f2f;
+    border: 1px solid #3b2f2f;
+}
 
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+.btn-outline:hover { background: #f0ebe3; }
 
-        .item, .category {
-            background: #f8f9fa;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            border-left: 4px solid #1a1a1a;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
+.btn-danger {
+    background: #b5372a;
+}
 
-        .item-name, .category-name {
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-            font-size: clamp(0.95rem, 3vw, 1rem);
-        }
+.btn-danger:hover { background: #963025; }
 
-        .item-details {
-            font-size: clamp(0.8rem, 2.5vw, 0.85em);
-            color: #666;
-            line-height: 1.5;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
+.btn-danger-sm {
+    width: auto;
+    min-height: 30px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    background: transparent;
+    color: #b5372a;
+    border: 1px solid #b5372a;
+}
 
-        .status-critical {
-            color: #e74c3c;
-            font-weight: 600;
-        }
+.btn-danger-sm:hover { background: #fdf0ee; }
 
-        .status-low {
-            color: #f39c12;
-            font-weight: 600;
-        }
+/* Item & category rows */
+.entry {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: #f0ebe3;
+    border-radius: 6px;
+    border-left: 3px solid #3b2f2f;
+}
 
-        .status-ok {
-            color: #27ae60;
-            font-weight: 600;
-        }
+.entry-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
 
-        .loading {
-            color: #999;
-            font-style: italic;
-            text-align: center;
-            padding: 20px 12px;
-        }
-    </style>
+.entry-name {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 600;
+    color: #3b2f2f;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+
+.entry-meta {
+    font-size: 0.8rem;
+    color: #6b5b4e;
+    line-height: 1.5;
+}
+
+.entry-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.bump-btn {
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #faf7f2;
+    color: #3b2f2f;
+    border: 1px solid #ddd5c8;
+    width: auto;
+    min-width: 32px;
+}
+
+.bump-btn:hover { border-color: #3b2f2f; }
+
+.edit-form {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd5c8;
+}
+
+.edit-form .form-group { margin-bottom: 8px; }
+
+.row {
+    display: flex;
+    gap: 8px;
+}
+
+.row > * { flex: 1; }
+
+.status-ok { color: #4a7c3f; font-weight: 600; }
+.status-low { color: #b8860b; font-weight: 600; }
+.status-critical { color: #b5372a; font-weight: 600; }
+
+.empty {
+    color: #a09585;
+    font-style: italic;
+    text-align: center;
+    padding: 16px;
+    font-size: 0.85rem;
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>☕ Drogo Slice</h1>
-            <nav>
-                <a href="/">🔍 Scan</a>
-            </nav>
-        </header>
+<div class="container">
 
-        <!-- Add Category Form -->
-        <div class="card">
-            <h2>➕ Add Category</h2>
-            <div class="form-group">
-                <input type="text" id="new-cat-name" placeholder="Name">
-                <input type="number" id="new-cat-order" placeholder="Display order" min="0">
-            </div>
-            <button onclick="createCategory()">Create</button>
-        </div>
+<header>
+    <h1>Drogo Slice</h1>
+    <nav><a href="/">Scan</a></nav>
+</header>
 
-        <!-- Categories Card -->
-        <div class="card">
-            <h2>🏷️ Categories</h2>
-            <div class="categories-list" id="categoriesList">
-                <p class="loading">Loading categories...</p>
-            </div>
-        </div>
-
-        <!-- Add Item Form -->
-        <div class="card">
-            <h2>➕ Add Item</h2>
-            <div class="form-group">
-                <input type="number" id="new-item-id" placeholder="ID (leave blank for next)" min="1">
-                <input type="text" id="new-item-name" placeholder="Name">
-                <input type="text" id="new-item-unit" placeholder="Unit">
-            </div>
-            <div class="form-group">
-                <input type="number" id="new-item-qty" placeholder="Qty" min="0">
-                <input type="number" id="new-item-par" placeholder="Par level" min="0">
-            </div>
-            <div class="form-group">
-                <select id="new-item-cat"></select>
-            </div>
-            <button onclick="createItem()">Create</button>
-        </div>
-
-        <!-- All Items Card -->
-        <div class="card">
-            <h2>📋 All Items</h2>
-            <div class="all-items-list" id="allItemsList">
-                <p class="loading">Loading items...</p>
-            </div>
-        </div>
-
+<div class="card">
+    <h2>Add Category</h2>
+    <div class="form-group">
+        <input type="text" id="cat-name" placeholder="Name">
+        <input type="number" id="cat-order" placeholder="Display order" min="0">
     </div>
+    <button onclick="createCategory()">Create</button>
+</div>
 
-    <script>
-        const API_URL = '';
+<div class="card">
+    <h2>Categories</h2>
+    <div id="catList"><p class="empty">Loading...</p></div>
+</div>
 
-        // Global state
-        let allCategories = [];
+<div class="card">
+    <h2>Add Item</h2>
+    <div class="form-group">
+        <input type="number" id="item-id" placeholder="ID (blank = next)" min="1">
+        <input type="text" id="item-name" placeholder="Name">
+        <input type="text" id="item-unit" placeholder="Unit">
+    </div>
+    <div class="form-group">
+        <div class="row">
+            <input type="number" id="item-qty" placeholder="Qty" min="0">
+            <input type="number" id="item-par" placeholder="Par level" min="0">
+        </div>
+    </div>
+    <div class="form-group">
+        <select id="item-cat"></select>
+    </div>
+    <button onclick="createItem()">Create</button>
+</div>
 
-        window.addEventListener('DOMContentLoaded', () => {
-            loadCategories();
-            loadItems();
-        });
+<div class="card">
+    <h2>All Items</h2>
+    <div id="itemList"><p class="empty">Loading...</p></div>
+</div>
 
-        // ─── Categories ───
-        async function loadCategories() {
-            try {
-                const res = await fetch(`${API_URL}/api/categories`);
-                allCategories = await res.json();
+</div>
 
-                const list = document.getElementById('categoriesList');
-                if (list) {
-                    if (allCategories.length === 0) {
-                        list.innerHTML = '<p class="loading">No categories yet</p>';
-                    } else {
-                        list.innerHTML = allCategories.map(cat => `
-                            <div class="category">
-                                <div class="category-row">
-                                    <div class="category-info">
-                                        <div class="category-name">${esc(cat.name)}</div>
-                                        <div class="item-details">Order: ${cat.display_order}</div>
-                                    </div>
-                                    <button class="btn-danger-sm" onclick="deleteCategory(${cat.id})" title="Delete category">✕</button>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-                }
+<script>
+let categories = [];
 
-                // also populate new-item-cat dropdown if present
-                const newCatSelect = document.getElementById('new-item-cat');
-                if (newCatSelect) {
-                    newCatSelect.innerHTML = allCategories.map(c =>
-                        `<option value="${c.id}">${esc(c.name)}</option>`
-                    ).join('');
-                }
-            } catch (err) {
-                console.error('Failed to load categories:', err);
-            }
-        }
+window.addEventListener('DOMContentLoaded', () => {
+    loadCategories();
+    loadItems();
+});
 
-        async function deleteCategory(id) {
-            if (!confirm('Delete this category? Items in it may be affected.')) return;
-            try {
-                const res = await fetch(`${API_URL}/api/categories/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    loadCategories();
-                    loadItems();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to delete category');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+// --- Categories ---
 
-        async function createCategory() {
-            const name = document.getElementById('new-cat-name').value.trim();
-            const order = parseInt(document.getElementById('new-cat-order').value);
-            if (!name) { alert('Name required'); return; }
-            try {
-                const res = await fetch(`${API_URL}/api/categories`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, display_order: isNaN(order) ? undefined : order }),
-                });
-                if (res.ok) {
-                    document.getElementById('new-cat-name').value = '';
-                    document.getElementById('new-cat-order').value = '';
-                    loadCategories();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to create category');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+async function loadCategories() {
+    try {
+        const res = await fetch('/api/categories');
+        categories = await res.json();
+    } catch {
+        categories = [];
+    }
 
-        // ─── Items ───
-        async function loadItems() {
-            try {
-                const res = await fetch(`${API_URL}/api/items`);
-                const items = await res.json();
+    const list = document.getElementById('catList');
+    if (categories.length === 0) {
+        list.innerHTML = '<p class="empty">No categories yet</p>';
+    } else {
+        list.innerHTML = categories.map(c => `
+            <div class="entry">
+                <div class="entry-header">
+                    <div>
+                        <div class="entry-name">${esc(c.name)}</div>
+                        <div class="entry-meta">Order: ${c.display_order}</div>
+                    </div>
+                    <button class="btn-danger-sm" onclick="deleteCategory(${c.id})">Delete</button>
+                </div>
+            </div>`).join('');
+    }
 
-                const list = document.getElementById('allItemsList');
-                if (list) {
-                    if (items.length === 0) {
-                        list.innerHTML = '<p class="loading">No items yet</p>';
-                    } else {
-                        list.innerHTML = items.map(item => {
-                            const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
-                            let statusClass, statusLabel;
-                            if (ratio <= 0.25) { statusClass = 'status-critical'; statusLabel = 'CRITICAL'; }
-                            else if (ratio <= 0.5) { statusClass = 'status-low'; statusLabel = 'LOW'; }
-                            else { statusClass = 'status-ok'; statusLabel = 'OK'; }
+    document.getElementById('item-cat').innerHTML =
+        categories.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+}
 
-                            const catOptions = allCategories.map(c =>
-                                `<option value="${c.id}" ${c.id === item.category_id ? 'selected' : ''}>${esc(c.name)}</option>`
-                            ).join('');
+async function createCategory() {
+    const name = document.getElementById('cat-name').value.trim();
+    const order = parseInt(document.getElementById('cat-order').value);
+    if (!name) { alert('Name required'); return; }
 
-                            return `
-                            <div class="item" id="item-row-${item.id}">
-                                <div class="item-row-main">
-                                    <div class="item-row-info">
-                                        <div class="item-name">#${item.id} — ${esc(item.name)}</div>
-                                        <div class="item-details">
-                                            <strong>${item.current_quantity}</strong>/${item.par_level} ${esc(item.unit)}
-                                            • ${item.category ? esc(item.category.name) : 'N/A'}
-                                            • <span class="${statusClass}">${statusLabel}</span>
-                                        </div>
-                                    </div>
-                                    <div class="item-row-actions">
-                                        <div class="bump-btns">
-                                            <button class="bump-btn bump-minus" onclick="bumpQty(${item.id}, -1, ${item.current_quantity})" title="-1">−</button>
-                                            <button class="bump-btn" onclick="bumpQty(${item.id}, 1, ${item.current_quantity})" title="+1">+</button>
-                                        </div>
-                                        <button class="btn-outline-sm" onclick="toggleItemEdit(${item.id})">Edit</button>
-                                    </div>
-                                </div>
-                                <div class="item-edit-form" id="item-edit-${item.id}" style="display:none;">
-                                    <div class="form-group">
-                                        <input type="text" id="edit-name-${item.id}" value="${esc(item.name)}" placeholder="Name">
-                                        <input type="text" id="edit-unit-${item.id}" value="${esc(item.unit)}" placeholder="Unit">
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="number" id="edit-qty-${item.id}" value="${item.current_quantity}" placeholder="Qty" min="0">
-                                        <input type="number" id="edit-par-${item.id}" value="${item.par_level}" placeholder="Par" min="0">
-                                    </div>
-                                    <div class="form-group">
-                                        <select id="edit-cat-${item.id}">${catOptions}</select>
-                                    </div>
-                                    <div class="reassign-row">
-                                        <input type="number" id="reassign-id-${item.id}" placeholder="New #" min="1">
-                                        <button class="btn-outline-sm" onclick="reassignItemId(${item.id})">Reassign QR Label</button>
-                                    </div>
-                                    <div class="btn-row">
-                                        <button onclick="saveItemEdits(${item.id})">Save</button>
-                                        <button class="btn-danger" onclick="deleteItem(${item.id})">Delete</button>
-                                    </div>
-                                </div>
-                            </div>`;
-                        }).join('');
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to load items:', err);
-            }
-        }
+    const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, display_order: isNaN(order) ? undefined : order })
+    });
 
-        async function createItem() {
-            const idVal = document.getElementById('new-item-id').value;
-            const id = idVal ? parseInt(idVal) : undefined;
-            const payload = {
-                id,
-                name: document.getElementById('new-item-name').value.trim(),
-                unit: document.getElementById('new-item-unit').value.trim(),
-                current_quantity: parseFloat(document.getElementById('new-item-qty').value),
-                par_level: parseFloat(document.getElementById('new-item-par').value),
-                category_id: parseInt(document.getElementById('new-item-cat').value),
-            };
-            if (!payload.name) { alert('Name required'); return; }
-            try {
-                const res = await fetch(`${API_URL}/api/items`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
-                if (res.ok) {
-                    document.getElementById('new-item-id').value = '';
-                    document.getElementById('new-item-name').value = '';
-                    document.getElementById('new-item-unit').value = '';
-                    document.getElementById('new-item-qty').value = '';
-                    document.getElementById('new-item-par').value = '';
-                    loadItems();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to create item');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+    if (res.ok) {
+        document.getElementById('cat-name').value = '';
+        document.getElementById('cat-order').value = '';
+        loadCategories();
+    } else {
+        const d = await res.json();
+        alert(d.detail || 'Failed');
+    }
+}
 
-        function toggleItemEdit(id) {
-            const form = document.getElementById(`item-edit-${id}`);
-            form.style.display = form.style.display === 'none' ? '' : 'none';
-        }
+async function deleteCategory(id) {
+    if (!confirm('Delete this category?')) return;
+    const res = await fetch('/api/categories/' + id, { method: 'DELETE' });
+    if (res.ok) { loadCategories(); loadItems(); }
+    else { const d = await res.json(); alert(d.detail || 'Failed'); }
+}
 
-        async function bumpQty(id, delta, currentQty) {
-            const newQty = Math.max(0, currentQty + delta);
-            try {
-                const res = await fetch(`${API_URL}/api/items/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ current_quantity: newQty })
-                });
-                if (res.ok) {
-                    loadItems();
-                }
-            } catch (err) {
-                console.error('Bump failed:', err);
-            }
-        }
+// --- Items ---
 
-        async function saveItemEdits(id) {
-            const payload = {
-                name: document.getElementById(`edit-name-${id}`).value.trim(),
-                unit: document.getElementById(`edit-unit-${id}`).value.trim(),
-                current_quantity: parseFloat(document.getElementById(`edit-qty-${id}`).value),
-                par_level: parseFloat(document.getElementById(`edit-par-${id}`).value),
-                category_id: parseInt(document.getElementById(`edit-cat-${id}`).value),
-            };
+async function loadItems() {
+    let items = [];
+    try {
+        const res = await fetch('/api/items');
+        items = await res.json();
+    } catch { items = []; }
 
-            try {
-                const res = await fetch(`${API_URL}/api/items/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    loadItems();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to save');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+    const list = document.getElementById('itemList');
+    if (items.length === 0) {
+        list.innerHTML = '<p class="empty">No items yet</p>';
+        return;
+    }
 
-        async function reassignItemId(oldId) {
-            const newId = parseInt(document.getElementById(`reassign-id-${oldId}`).value);
-            if (isNaN(newId) || newId <= 0) {
-                alert('Enter a valid new ID');
-                return;
-            }
-            if (!confirm(`Reassign item #${oldId} to #${newId}?`)) return;
+    list.innerHTML = items.map(item => {
+        const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
+        let cls = 'status-ok', lbl = 'OK';
+        if (ratio <= 0.25) { cls = 'status-critical'; lbl = 'CRITICAL'; }
+        else if (ratio <= 0.5) { cls = 'status-low'; lbl = 'LOW'; }
 
-            try {
-                const res = await fetch(`${API_URL}/api/items/${oldId}/reassign?new_id=${newId}`, {
-                    method: 'POST'
-                });
-                if (res.ok) {
-                    loadItems();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to reassign');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+        const catOpts = categories.map(c =>
+            `<option value="${c.id}" ${c.id === item.category_id ? 'selected' : ''}>${esc(c.name)}</option>`
+        ).join('');
 
-        async function deleteItem(id) {
-            if (!confirm(`Delete item #${id}? This cannot be undone.`)) return;
-            try {
-                const res = await fetch(`${API_URL}/api/items/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    loadItems();
-                } else {
-                    const data = await res.json();
-                    alert(data.detail || 'Failed to delete');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
+        return `
+        <div class="entry" id="row-${item.id}">
+            <div class="entry-header">
+                <div>
+                    <div class="entry-name">#${item.id} — ${esc(item.name)}</div>
+                    <div class="entry-meta">
+                        <strong>${item.current_quantity}</strong>/${item.par_level} ${esc(item.unit)}
+                        &middot; ${item.category ? esc(item.category.name) : 'N/A'}
+                        &middot; <span class="${cls}">${lbl}</span>
+                    </div>
+                </div>
+                <div class="entry-actions">
+                    <button class="bump-btn" onclick="bumpQty(${item.id},-1,${item.current_quantity})">-</button>
+                    <button class="bump-btn" onclick="bumpQty(${item.id},1,${item.current_quantity})">+</button>
+                    <button class="btn-sm btn-outline" onclick="toggleEdit(${item.id})">Edit</button>
+                </div>
+            </div>
+            <div class="edit-form" id="edit-${item.id}" style="display:none;">
+                <div class="form-group">
+                    <input type="text" id="en-${item.id}" value="${esc(item.name)}" placeholder="Name">
+                    <input type="text" id="eu-${item.id}" value="${esc(item.unit)}" placeholder="Unit">
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <input type="number" id="eq-${item.id}" value="${item.current_quantity}" placeholder="Qty" min="0">
+                        <input type="number" id="ep-${item.id}" value="${item.par_level}" placeholder="Par" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <select id="ec-${item.id}">${catOpts}</select>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <input type="number" id="ri-${item.id}" placeholder="New QR #" min="1">
+                        <button class="btn-sm btn-outline" onclick="reassign(${item.id})">Reassign</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <button onclick="saveEdits(${item.id})">Save</button>
+                    <button class="btn-danger" onclick="deleteItem(${item.id})">Delete</button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
 
-        function esc(str) {
-            const d = document.createElement('div');
-            d.textContent = str;
-            return d.innerHTML;
-        }
-    </script>
+async function createItem() {
+    const idVal = document.getElementById('item-id').value;
+    const payload = {
+        id: idVal ? parseInt(idVal) : undefined,
+        name: document.getElementById('item-name').value.trim(),
+        unit: document.getElementById('item-unit').value.trim(),
+        current_quantity: parseFloat(document.getElementById('item-qty').value),
+        par_level: parseFloat(document.getElementById('item-par').value),
+        category_id: parseInt(document.getElementById('item-cat').value)
+    };
+    if (!payload.name) { alert('Name required'); return; }
+
+    const res = await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        ['item-id','item-name','item-unit','item-qty','item-par'].forEach(
+            id => document.getElementById(id).value = ''
+        );
+        loadItems();
+    } else {
+        const d = await res.json();
+        alert(d.detail || 'Failed');
+    }
+}
+
+function toggleEdit(id) {
+    const el = document.getElementById('edit-' + id);
+    el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+
+async function bumpQty(id, delta, current) {
+    const res = await fetch('/api/items/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_quantity: Math.max(0, current + delta) })
+    });
+    if (res.ok) loadItems();
+}
+
+async function saveEdits(id) {
+    const res = await fetch('/api/items/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name: document.getElementById('en-' + id).value.trim(),
+            unit: document.getElementById('eu-' + id).value.trim(),
+            current_quantity: parseFloat(document.getElementById('eq-' + id).value),
+            par_level: parseFloat(document.getElementById('ep-' + id).value),
+            category_id: parseInt(document.getElementById('ec-' + id).value)
+        })
+    });
+    if (res.ok) loadItems();
+    else { const d = await res.json(); alert(d.detail || 'Failed'); }
+}
+
+async function reassign(oldId) {
+    const newId = parseInt(document.getElementById('ri-' + oldId).value);
+    if (isNaN(newId) || newId <= 0) { alert('Enter a valid ID'); return; }
+    if (!confirm('Reassign #' + oldId + ' to #' + newId + '?')) return;
+
+    const res = await fetch('/api/items/' + oldId + '/reassign?new_id=' + newId, { method: 'POST' });
+    if (res.ok) loadItems();
+    else { const d = await res.json(); alert(d.detail || 'Failed'); }
+}
+
+async function deleteItem(id) {
+    if (!confirm('Delete item #' + id + '?')) return;
+    const res = await fetch('/api/items/' + id, { method: 'DELETE' });
+    if (res.ok) loadItems();
+    else { const d = await res.json(); alert(d.detail || 'Failed'); }
+}
+
+function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+</script>
 </body>
 </html>

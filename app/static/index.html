@@ -2,91 +2,69 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Drogo Slice">
-<meta name="theme-color" content="#ffffff">
-<title>Drogo Slice - Scan</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drogo Slice</title>
 <script src="https://unpkg.com/html5-qrcode"></script>
-
 <style>
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
-
-html, body {
-    width: 100%;
-    height: 100%;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: #f5f5f4;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0ebe3;
+    color: #2c2420;
     min-height: 100vh;
-    padding: 12px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    -webkit-text-size-adjust: 100%;
+    padding: 16px;
 }
 
 .container {
-    max-width: 600px;
+    max-width: 540px;
     margin: 0 auto;
-    width: 100%;
 }
 
 header {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-    border: 1px solid #e8e8e8;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    background: #faf7f2;
+    border: 1px solid #ddd5c8;
+    border-radius: 8px;
 }
 
 h1 {
-    color: #1a1a1a;
-    margin-bottom: 0;
-    font-size: clamp(1.4rem, 5vw, 1.8rem);
-    word-break: break-word;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3b2f2f;
 }
 
 nav a {
-    font-size: 0.9em;
-    color: #1a1a1a;
+    font-size: 0.85rem;
+    color: #5a4a3a;
     text-decoration: none;
-    margin-left: 12px;
+    border-bottom: 1px solid transparent;
 }
 
-nav a:hover {
-    text-decoration: underline;
-}
+nav a:hover { border-bottom-color: #5a4a3a; }
 
 .card {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid #e8e8e8;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    background: #faf7f2;
+    border: 1px solid #ddd5c8;
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 14px;
     text-align: center;
 }
 
 .card h2 {
-    color: #1a1a1a;
-    margin-bottom: 16px;
-    font-size: clamp(1rem, 4vw, 1.2em);
-    border-bottom: 2px solid #1a1a1a;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #3b2f2f;
+    margin-bottom: 14px;
     padding-bottom: 10px;
+    border-bottom: 1px solid #ddd5c8;
 }
 
 .btn-group {
@@ -97,325 +75,256 @@ nav a:hover {
 }
 
 button {
-    background: #1a1a1a;
-    color: white;
+    background: #3b2f2f;
+    color: #faf7f2;
     border: none;
-    padding: 12px 20px;
+    padding: 10px 18px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: clamp(0.9rem, 3vw, 1rem);
+    font-size: 0.9rem;
     font-weight: 600;
-    min-height: 48px;
+    font-family: inherit;
+    min-height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    white-space: nowrap;
-    -webkit-user-select: none;
-    user-select: none;
-    transition: background-color 0.2s, transform 0.1s;
-    font-family: inherit;
 }
 
-button:hover:not(:active), button:focus {
-    background: #333333;
-}
-
-button:active {
-    transform: scale(0.98);
-}
+button:hover { background: #4e3e3e; }
+button:active { transform: scale(0.98); }
 
 button.secondary {
     background: transparent;
-    color: #1a1a1a;
-    border: 1px solid #1a1a1a;
+    color: #3b2f2f;
+    border: 1px solid #3b2f2f;
 }
 
-button.secondary:hover:not(:active) {
-    background: #f5f5f4;
-}
+button.secondary:hover { background: #f0ebe3; }
 
 #qr-reader {
-    border: 1px solid #e8e8e8;
-    border-radius: 8px;
+    border: 1px solid #ddd5c8;
+    border-radius: 6px;
     overflow: hidden;
-    margin: 12px auto 0;
-    max-width: 400px;
+    margin: 10px auto 0;
+    max-width: 360px;
 }
 
 .result {
-    margin-top: 14px;
-    padding: 16px;
-    background: #f8f9fa;
-    border: 1px solid #e8e8e8;
-    border-radius: 8px;
-    text-align: center;
+    margin-top: 12px;
+    padding: 14px;
+    background: #f0ebe3;
+    border: 1px solid #ddd5c8;
+    border-radius: 6px;
 }
 
 .item-name {
+    font-family: Georgia, 'Times New Roman', serif;
     font-weight: 600;
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-    color: #1a1a1a;
+    font-size: 1.05rem;
+    margin-bottom: 6px;
+    color: #3b2f2f;
 }
 
 .item-meta {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     line-height: 1.6;
-    color: #666;
+    color: #6b5b4e;
 }
 
-.status-ok { color: #27ae60; font-weight: 600; }
-.status-low { color: #f39c12; font-weight: 600; }
-.status-critical { color: #e74c3c; font-weight: 600; }
+.status-ok { color: #4a7c3f; font-weight: 600; }
+.status-low { color: #b8860b; font-weight: 600; }
+.status-critical { color: #b5372a; font-weight: 600; }
 
 .qty-controls {
     display: flex;
     gap: 8px;
-    margin-top: 14px;
+    margin-top: 12px;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .bump {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    border: 2px solid #1a1a1a;
-    background: white;
+    border: 2px solid #3b2f2f;
+    background: #faf7f2;
     font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    -webkit-user-select: none;
-    user-select: none;
 }
 
-.bump:active {
-    transform: scale(0.95);
-}
-
-.bump.minus {
-    border-color: #e74c3c;
-    color: #e74c3c;
-}
-
-.bump.plus {
-    border-color: #27ae60;
-    color: #27ae60;
-}
+.bump:active { transform: scale(0.95); }
+.bump.minus { border-color: #b5372a; color: #b5372a; }
+.bump.plus { border-color: #4a7c3f; color: #4a7c3f; }
 
 input[type=number] {
-    width: 80px;
-    padding: 10px;
-    border: 1px solid #ddd;
+    width: 72px;
+    padding: 8px;
+    border: 1px solid #ddd5c8;
     border-radius: 6px;
     font-size: 16px;
     font-family: inherit;
     text-align: center;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+    background: #fff;
 }
 
 input[type=number]:focus {
     outline: none;
-    border-color: #1a1a1a;
-    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+    border-color: #3b2f2f;
+}
+
+.placeholder {
+    color: #a09585;
+    font-style: italic;
+    padding: 10px;
+    font-size: 0.85rem;
 }
 
 .error-msg {
-    color: #e74c3c;
+    color: #b5372a;
     font-weight: 600;
-    padding: 8px;
+    padding: 6px;
 }
-
 </style>
 </head>
-
 <body>
 
 <div class="container">
 
 <header>
-    <h1>☕ Drogo Slice</h1>
-    <nav>
-        <a href="/manage">📦 Manage</a>
-    </nav>
+    <h1>Drogo Slice</h1>
+    <nav><a href="/manage">Manage</a></nav>
 </header>
 
 <div class="card">
-    <h2>🔍 Scan Item</h2>
-
+    <h2>Scan Item</h2>
     <div class="btn-group">
-        <button id="qrStartBtn" onclick="startScanner()">Start Scanner</button>
-        <button id="qrStopBtn" class="secondary" onclick="stopScanner()" style="display:none;">Stop</button>
+        <button id="startBtn" onclick="startScanner()">Start Scanner</button>
+        <button id="stopBtn" class="secondary" onclick="stopScanner()" style="display:none;">Stop</button>
     </div>
-
     <div id="qr-reader"></div>
 </div>
 
 <div class="card">
-    <h2>📋 Last Scan</h2>
-
+    <h2>Last Scan</h2>
     <div id="scanResult" class="result" style="display:none;">
-        <div id="scanResultContent"></div>
+        <div id="resultContent"></div>
     </div>
-
-    <p id="scanPlaceholder" style="color:#999; font-style:italic; padding:12px;">
-        Scan a QR code to see item details
-    </p>
+    <p id="placeholder" class="placeholder">Scan a QR code to see item details</p>
 </div>
 
 </div>
 
 <script>
-
-const API_URL = "";
-
-let html5Qrcode = null;
-let scanning = false;
+let scanner = null;
+let active = false;
 
 function startScanner() {
-    document.getElementById("qrStartBtn").style.display = "none";
-    document.getElementById("qrStopBtn").style.display = "inline-flex";
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'inline-flex';
 
-    html5Qrcode = new Html5Qrcode("qr-reader");
-
-    html5Qrcode.start(
-        { facingMode: "environment" },
+    scanner = new Html5Qrcode('qr-reader');
+    scanner.start(
+        { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        onScanSuccess
+        onScan
     ).then(() => {
-        scanning = true;
-    }).catch(err => {
-        console.error("Camera error:", err);
-        resetScannerUI();
-        showError("Camera access denied or unavailable. Please allow camera permissions.");
+        active = true;
+    }).catch(() => {
+        resetUI();
+        showError('Camera access denied. Please allow camera permissions.');
     });
 }
 
 function stopScanner() {
-    resetScannerUI();
-
-    if (html5Qrcode && scanning) {
-        scanning = false;
-        html5Qrcode.stop().then(() => {
-            html5Qrcode.clear();
-        }).catch(() => {});
+    resetUI();
+    if (scanner && active) {
+        active = false;
+        scanner.stop().then(() => scanner.clear()).catch(() => {});
     }
 }
 
-function resetScannerUI() {
-    document.getElementById("qrStartBtn").style.display = "inline-flex";
-    document.getElementById("qrStopBtn").style.display = "none";
+function resetUI() {
+    document.getElementById('startBtn').style.display = 'inline-flex';
+    document.getElementById('stopBtn').style.display = 'none';
 }
 
-async function onScanSuccess(decodedText) {
+async function onScan(text) {
     stopScanner();
-
-    const id = parseInt(decodedText);
-
-    if (!id || id <= 0) {
-        showError("Invalid QR code: " + decodedText);
-        return;
-    }
+    const id = parseInt(text);
+    if (!id || id <= 0) { showError('Invalid QR code'); return; }
 
     try {
-        const res = await fetch(`${API_URL}/api/items/${id}`);
-
-        if (!res.ok) {
-            showError("Item #" + id + " not found");
-            return;
-        }
+        const res = await fetch('/api/items/' + id);
+        if (!res.ok) { showError('Item #' + id + ' not found'); return; }
 
         const item = await res.json();
+        const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
 
-        let ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
+        let cls = 'status-ok', lbl = 'OK';
+        if (ratio <= 0.25) { cls = 'status-critical'; lbl = 'CRITICAL'; }
+        else if (ratio <= 0.5) { cls = 'status-low'; lbl = 'LOW'; }
 
-        let status = "status-ok";
-        let label = "OK";
-
-        if (ratio <= 0.25) { status = "status-critical"; label = "CRITICAL"; }
-        else if (ratio <= 0.5) { status = "status-low"; label = "LOW"; }
-
-        renderItem(item, status, label);
-
-    } catch (e) {
-        showError("Network error — check your connection");
+        showItem(item, cls, lbl);
+    } catch {
+        showError('Network error');
     }
 }
 
-function renderItem(item, status, label) {
-    const html = `
-    <div class="item-name">#${item.id} — ${esc(item.name)}</div>
-
-    <div class="item-meta">
-        <strong>${item.current_quantity}</strong> / ${item.par_level} ${esc(item.unit)}<br>
-        Status: <span class="${status}">${label}</span>
-    </div>
-
-    <div class="qty-controls">
-        <div class="bump minus" onclick="bump(${item.id}, -1, ${item.current_quantity})">−</div>
-
-        <input type="number" id="qtyInput" value="${item.current_quantity}">
-
-        <div class="bump plus" onclick="bump(${item.id}, 1, ${item.current_quantity})">+</div>
-
-        <button onclick="setQty(${item.id})" style="width:auto; padding:10px 16px; min-height:40px;">Set</button>
-    </div>
-    `;
-
-    document.getElementById("scanResultContent").innerHTML = html;
-    document.getElementById("scanResult").style.display = "block";
-    document.getElementById("scanPlaceholder").style.display = "none";
+function showItem(item, cls, lbl) {
+    document.getElementById('resultContent').innerHTML = `
+        <div class="item-name">#${item.id} — ${esc(item.name)}</div>
+        <div class="item-meta">
+            <strong>${item.current_quantity}</strong> / ${item.par_level} ${esc(item.unit)}
+            &middot; <span class="${cls}">${lbl}</span>
+        </div>
+        <div class="qty-controls">
+            <div class="bump minus" onclick="bump(${item.id},-1,${item.current_quantity})">-</div>
+            <input type="number" id="qtyIn" value="${item.current_quantity}">
+            <div class="bump plus" onclick="bump(${item.id},1,${item.current_quantity})">+</div>
+            <button onclick="setQty(${item.id})" style="min-height:38px;padding:8px 14px;">Set</button>
+        </div>`;
+    document.getElementById('scanResult').style.display = 'block';
+    document.getElementById('placeholder').style.display = 'none';
 }
 
 async function bump(id, delta, current) {
-    const newQty = Math.max(0, current + delta);
-
-    await fetch(`${API_URL}/api/items/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ current_quantity: newQty })
+    await fetch('/api/items/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_quantity: Math.max(0, current + delta) })
     });
-
-    onScanSuccess(String(id));
+    onScan(String(id));
 }
 
 async function setQty(id) {
-    const qty = parseFloat(document.getElementById("qtyInput").value);
+    const qty = parseFloat(document.getElementById('qtyIn').value);
+    if (isNaN(qty) || qty < 0) { alert('Enter a valid quantity'); return; }
 
-    if (isNaN(qty) || qty < 0) {
-        alert("Enter a valid quantity");
-        return;
-    }
-
-    await fetch(`${API_URL}/api/items/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+    await fetch('/api/items/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ current_quantity: qty })
     });
-
-    onScanSuccess(String(id));
+    onScan(String(id));
 }
 
 function showError(msg) {
-    document.getElementById("scanResultContent").innerHTML = '<div class="error-msg">' + msg + '</div>';
-    document.getElementById("scanResult").style.display = "block";
-    document.getElementById("scanPlaceholder").style.display = "none";
+    document.getElementById('resultContent').innerHTML = '<div class="error-msg">' + msg + '</div>';
+    document.getElementById('scanResult').style.display = 'block';
+    document.getElementById('placeholder').style.display = 'none';
 }
 
-function esc(str) {
+function esc(s) {
     const d = document.createElement('div');
-    d.textContent = str;
+    d.textContent = s;
     return d.innerHTML;
 }
-
 </script>
-
 </body>
 </html>
