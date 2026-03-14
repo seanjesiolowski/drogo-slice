@@ -20,4 +20,6 @@ App runs at `http://localhost:8000`. API docs at `/docs`.
 
 See `.env.example` for defaults.
 
+## Security
+
 ## Testing
