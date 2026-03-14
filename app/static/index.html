@@ -1,158 +1,236 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drogo Slice</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Drogo Slice">
+<meta name="theme-color" content="#ffffff">
+<title>Drogo Slice - Scan</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
 
-:root{
---cream:#f6f3eb;
---paper:#fbf8f2;
---forest:#2f4f3a;
---forest-soft:#4e6b57;
---coffee:#3b2f2f;
---line:#e4dfd4;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
+html, body {
+    width: 100%;
+    height: 100%;
 }
 
-body{
-font-family:Inter,system-ui,sans-serif;
-background:var(--cream);
-color:var(--coffee);
-padding:20px;
-max-width:620px;
-margin:auto;
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f5f5f4;
+    min-height: 100vh;
+    padding: 12px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
 }
 
-header{
-margin-bottom:18px;
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
 }
 
-h1{
-font-family:Georgia,serif;
-font-size:1.6rem;
-margin-bottom:4px;
+header {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.subtitle{
-font-size:.85rem;
-color:#6a6258;
+h1 {
+    color: #1a1a1a;
+    margin-bottom: 0;
+    font-size: clamp(1.4rem, 5vw, 1.8rem);
+    word-break: break-word;
 }
 
-.section{
-padding:16px 0;
-border-top:1px solid var(--line);
+nav a {
+    font-size: 0.9em;
+    color: #1a1a1a;
+    text-decoration: none;
+    margin-left: 12px;
 }
 
-.section-title{
-font-size:.8rem;
-letter-spacing:.08em;
-text-transform:uppercase;
-margin-bottom:12px;
-color:#6a6258;
+nav a:hover {
+    text-decoration: underline;
 }
 
-button{
-background:var(--forest);
-color:white;
-border:1px solid var(--forest);
-padding:10px 16px;
-font-size:.9rem;
-cursor:pointer;
-border-radius:4px;
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e8e8e8;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    text-align: center;
 }
 
-button.secondary{
-background:transparent;
-color:var(--forest);
+.card h2 {
+    color: #1a1a1a;
+    margin-bottom: 16px;
+    font-size: clamp(1rem, 4vw, 1.2em);
+    border-bottom: 2px solid #1a1a1a;
+    padding-bottom: 10px;
 }
 
-button-row{
-display:flex;
-gap:8px;
+.btn-group {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 12px;
 }
 
-#qr-reader{
-border:1px solid var(--line);
-border-radius:6px;
-overflow:hidden;
-margin-top:10px;
+button {
+    background: #1a1a1a;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    font-weight: 600;
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background-color 0.2s, transform 0.1s;
+    font-family: inherit;
 }
 
-.result{
-margin-top:14px;
-padding:14px;
-background:var(--paper);
-border:1px solid var(--line);
-border-radius:6px;
+button:hover:not(:active), button:focus {
+    background: #333333;
 }
 
-.item-name{
-font-weight:600;
-margin-bottom:6px;
+button:active {
+    transform: scale(0.98);
 }
 
-.item-meta{
-font-family:"JetBrains Mono", monospace;
-font-size:.85rem;
-line-height:1.6;
+button.secondary {
+    background: transparent;
+    color: #1a1a1a;
+    border: 1px solid #1a1a1a;
 }
 
-.status-ok{color:var(--forest);}
-.status-low{color:#b07a28;}
-.status-critical{color:#c33;}
-
-.qty-controls{
-display:flex;
-gap:8px;
-margin-top:12px;
-align-items:center;
+button.secondary:hover:not(:active) {
+    background: #f5f5f4;
 }
 
-.bump{
-width:34px;
-height:34px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:50%;
-border:1px solid var(--forest);
-background:white;
-font-weight:600;
-cursor:pointer;
+#qr-reader {
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 12px auto 0;
+    max-width: 400px;
 }
 
-.bump.minus{
-border-color:#c33;
-color:#c33;
+.result {
+    margin-top: 14px;
+    padding: 16px;
+    background: #f8f9fa;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    text-align: center;
 }
 
-input[type=number]{
-width:70px;
-padding:6px;
-border:1px solid var(--line);
-border-radius:4px;
-font-family:"JetBrains Mono", monospace;
+.item-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #1a1a1a;
 }
 
-.btn-group{
-display:flex;
-gap:8px;
-margin-bottom:10px;
+.item-meta {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #666;
+}
+
+.status-ok { color: #27ae60; font-weight: 600; }
+.status-low { color: #f39c12; font-weight: 600; }
+.status-critical { color: #e74c3c; font-weight: 600; }
+
+.qty-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.bump {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid #1a1a1a;
+    background: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.bump:active {
+    transform: scale(0.95);
+}
+
+.bump.minus {
+    border-color: #e74c3c;
+    color: #e74c3c;
+}
+
+.bump.plus {
+    border-color: #27ae60;
+    color: #27ae60;
+}
+
+input[type=number] {
+    width: 80px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: inherit;
+    text-align: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+input[type=number]:focus {
+    outline: none;
+    border-color: #1a1a1a;
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+}
+
+.error-msg {
+    color: #e74c3c;
+    font-weight: 600;
+    padding: 8px;
 }
 
 </style>
@@ -160,171 +238,181 @@ margin-bottom:10px;
 
 <body>
 
+<div class="container">
+
 <header>
-<h1>Drogo Slice</h1>
-<div class="subtitle">inventory scanner</div>
+    <h1>☕ Drogo Slice</h1>
+    <nav>
+        <a href="/manage">📦 Manage</a>
+    </nav>
 </header>
 
-<div class="section">
+<div class="card">
+    <h2>🔍 Scan Item</h2>
 
-<div class="section-title">Scan Item</div>
+    <div class="btn-group">
+        <button id="qrStartBtn" onclick="startScanner()">Start Scanner</button>
+        <button id="qrStopBtn" class="secondary" onclick="stopScanner()" style="display:none;">Stop</button>
+    </div>
 
-<div class="btn-group">
-<button id="qrStartBtn" onclick="startScanner()">Scan</button>
-<button id="qrStopBtn" class="secondary" onclick="stopScanner()" style="display:none;">Stop</button>
+    <div id="qr-reader"></div>
 </div>
 
-<div id="qr-reader"></div>
+<div class="card">
+    <h2>📋 Last Scan</h2>
 
-</div>
+    <div id="scanResult" class="result" style="display:none;">
+        <div id="scanResultContent"></div>
+    </div>
 
-<div class="section">
-
-<div class="section-title">Last Scan</div>
-
-<div id="scanResult" class="result" style="display:none;">
-<div id="scanResultContent"></div>
+    <p id="scanPlaceholder" style="color:#999; font-style:italic; padding:12px;">
+        Scan a QR code to see item details
+    </p>
 </div>
 
 </div>
 
 <script>
 
-const API_URL="";
+const API_URL = "";
 
-let html5Qrcode=null;
+let html5Qrcode = null;
+let scanning = false;
 
-function startScanner(){
+function startScanner() {
+    document.getElementById("qrStartBtn").style.display = "none";
+    document.getElementById("qrStopBtn").style.display = "inline-flex";
 
-document.getElementById("qrStartBtn").style.display="none";
-document.getElementById("qrStopBtn").style.display="inline-block";
+    html5Qrcode = new Html5Qrcode("qr-reader");
 
-html5Qrcode=new Html5Qrcode("qr-reader");
-
-html5Qrcode.start(
-{facingMode:"environment"},
-{fps:10,qrbox:{width:250,height:250}},
-onScanSuccess
-).catch(err=>{
-
-stopScanner();
-showError("Camera error");
-
-});
-
+    html5Qrcode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess
+    ).then(() => {
+        scanning = true;
+    }).catch(err => {
+        console.error("Camera error:", err);
+        resetScannerUI();
+        showError("Camera access denied or unavailable. Please allow camera permissions.");
+    });
 }
 
-function stopScanner(){
+function stopScanner() {
+    resetScannerUI();
 
-document.getElementById("qrStartBtn").style.display="inline-block";
-document.getElementById("qrStopBtn").style.display="none";
-
-if(html5Qrcode){
-html5Qrcode.stop().catch(()=>{});
+    if (html5Qrcode && scanning) {
+        scanning = false;
+        html5Qrcode.stop().then(() => {
+            html5Qrcode.clear();
+        }).catch(() => {});
+    }
 }
 
+function resetScannerUI() {
+    document.getElementById("qrStartBtn").style.display = "inline-flex";
+    document.getElementById("qrStopBtn").style.display = "none";
 }
 
-async function onScanSuccess(decodedText){
+async function onScanSuccess(decodedText) {
+    stopScanner();
 
-stopScanner();
+    const id = parseInt(decodedText);
 
-const id=parseInt(decodedText);
+    if (!id || id <= 0) {
+        showError("Invalid QR code: " + decodedText);
+        return;
+    }
 
-if(!id){
-showError("Invalid QR code");
-return;
+    try {
+        const res = await fetch(`${API_URL}/api/items/${id}`);
+
+        if (!res.ok) {
+            showError("Item #" + id + " not found");
+            return;
+        }
+
+        const item = await res.json();
+
+        let ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
+
+        let status = "status-ok";
+        let label = "OK";
+
+        if (ratio <= 0.25) { status = "status-critical"; label = "CRITICAL"; }
+        else if (ratio <= 0.5) { status = "status-low"; label = "LOW"; }
+
+        renderItem(item, status, label);
+
+    } catch (e) {
+        showError("Network error — check your connection");
+    }
 }
 
-try{
+function renderItem(item, status, label) {
+    const html = `
+    <div class="item-name">#${item.id} — ${esc(item.name)}</div>
 
-const res=await fetch(`${API_URL}/api/items/${id}`);
+    <div class="item-meta">
+        <strong>${item.current_quantity}</strong> / ${item.par_level} ${esc(item.unit)}<br>
+        Status: <span class="${status}">${label}</span>
+    </div>
 
-if(!res.ok){
-showError("Item not found");
-return;
+    <div class="qty-controls">
+        <div class="bump minus" onclick="bump(${item.id}, -1, ${item.current_quantity})">−</div>
+
+        <input type="number" id="qtyInput" value="${item.current_quantity}">
+
+        <div class="bump plus" onclick="bump(${item.id}, 1, ${item.current_quantity})">+</div>
+
+        <button onclick="setQty(${item.id})" style="width:auto; padding:10px 16px; min-height:40px;">Set</button>
+    </div>
+    `;
+
+    document.getElementById("scanResultContent").innerHTML = html;
+    document.getElementById("scanResult").style.display = "block";
+    document.getElementById("scanPlaceholder").style.display = "none";
 }
 
-const item=await res.json();
+async function bump(id, delta, current) {
+    const newQty = Math.max(0, current + delta);
 
-let ratio=item.par_level>0?item.current_quantity/item.par_level:1;
+    await fetch(`${API_URL}/api/items/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ current_quantity: newQty })
+    });
 
-let status="status-ok";
-let label="OK";
-
-if(ratio<=0.25){status="status-critical";label="CRITICAL"}
-else if(ratio<=0.5){status="status-low";label="LOW"}
-
-renderItem(item,status,label);
-
-}catch(e){
-
-showError("API error");
-
+    onScanSuccess(String(id));
 }
 
+async function setQty(id) {
+    const qty = parseFloat(document.getElementById("qtyInput").value);
+
+    if (isNaN(qty) || qty < 0) {
+        alert("Enter a valid quantity");
+        return;
+    }
+
+    await fetch(`${API_URL}/api/items/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ current_quantity: qty })
+    });
+
+    onScanSuccess(String(id));
 }
 
-function renderItem(item,status,label){
-
-const html=`
-<div class="item-name">#${item.id} — ${item.name}</div>
-
-<div class="item-meta">
-qty ${item.current_quantity}/${item.par_level} ${item.unit}<br>
-status <span class="${status}">${label}</span>
-</div>
-
-<div class="qty-controls">
-
-<div class="bump minus" onclick="bump(${item.id},-1,${item.current_quantity})">−</div>
-<div class="bump" onclick="bump(${item.id},1,${item.current_quantity})">+</div>
-
-<input type="number" id="qtyInput" value="${item.current_quantity}">
-
-<button onclick="setQty(${item.id})">set</button>
-
-</div>
-`;
-
-document.getElementById("scanResultContent").innerHTML=html;
-document.getElementById("scanResult").style.display="block";
-
+function showError(msg) {
+    document.getElementById("scanResultContent").innerHTML = '<div class="error-msg">' + msg + '</div>';
+    document.getElementById("scanResult").style.display = "block";
+    document.getElementById("scanPlaceholder").style.display = "none";
 }
 
-async function bump(id,delta,current){
-
-const newQty=Math.max(0,current+delta);
-
-await fetch(`${API_URL}/api/items/${id}`,{
-method:"PATCH",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({current_quantity:newQty})
-});
-
-onScanSuccess(String(id));
-
-}
-
-async function setQty(id){
-
-const qty=parseFloat(document.getElementById("qtyInput").value);
-
-await fetch(`${API_URL}/api/items/${id}`,{
-method:"PATCH",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({current_quantity:qty})
-});
-
-onScanSuccess(String(id));
-
-}
-
-function showError(msg){
-
-document.getElementById("scanResultContent").innerHTML="<span style='color:#c33'>"+msg+"</span>";
-document.getElementById("scanResult").style.display="block";
-
+function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
 }
 
 </script>
