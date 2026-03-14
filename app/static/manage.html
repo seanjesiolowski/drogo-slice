@@ -188,28 +188,23 @@ button:active { transform: scale(0.98); }
     flex-shrink: 0;
 }
 
-.bump-btn {
-    width: 32px !important;
-    height: 32px !important;
-    min-height: 32px !important;
-    min-width: 32px !important;
-    max-height: 32px !important;
-    padding: 0 !important;
-    margin: 0;
+.bump {
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    font-size: 1.1rem;
-    font-weight: 700;
-    line-height: 32px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border: 1px solid #ddd5c8;
     background: #faf7f2;
     color: #3b2f2f;
-    border: 1px solid #ddd5c8;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    user-select: none;
 }
 
-.bump-btn:hover { border-color: #3b2f2f; }
+.bump:hover { border-color: #3b2f2f; }
 
 .edit-form {
     margin-top: 10px;
@@ -390,8 +385,8 @@ async function loadItems() {
                     </div>
                 </div>
                 <div class="entry-actions">
-                    <button class="bump-btn" onclick="bumpQty(${item.id},-1,${item.current_quantity})">&minus;</button>
-                    <button class="bump-btn" onclick="bumpQty(${item.id},1,${item.current_quantity})">+</button>
+                    <div class="bump" onclick="bumpQty(${item.id},-1,${item.current_quantity})">&minus;</div>
+                    <div class="bump" onclick="bumpQty(${item.id},1,${item.current_quantity})">+</div>
                     <button class="btn-sm btn-outline" onclick="toggleEdit(${item.id})">Edit</button>
                 </div>
             </div>

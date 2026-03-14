@@ -147,18 +147,16 @@ button.secondary:hover { background: #f0ebe3; }
 .bump {
     width: 42px;
     height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border-radius: 50%;
     border: 2px solid #3b2f2f;
     background: #faf7f2;
     font-weight: 700;
     font-size: 1.3rem;
     line-height: 1;
+    display: grid;
+    place-items: center;
     cursor: pointer;
-    padding: 0;
-    text-align: center;
+    user-select: none;
 }
 
 .bump:active { transform: scale(0.95); }
