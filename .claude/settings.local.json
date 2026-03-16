@@ -6,7 +6,8 @@
       "Bash(git push:*)",
       "WebFetch(domain:www.saintdrogoscoffee.com)",
       "Bash(find <path> -name *.html -o -name *.css -o -name *.jsx -o -name *.tsx)",
-      "Bash(grep -c \"fetch\\\\|axios\\\\|XMLHttpRequest\" <path>/app/static/*.html)"
+      "Bash(grep -c \"fetch\\\\|axios\\\\|XMLHttpRequest\" <path>/app/static/*.html)",
+      "Bash(docker compose:*)"
     ]
   }
 }
