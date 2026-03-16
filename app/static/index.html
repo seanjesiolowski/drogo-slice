@@ -25,12 +25,15 @@ body {
 header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
+    padding: 14px 0;
     margin-bottom: 14px;
-    background: #faf7f2;
-    border: 1px solid #ddd5c8;
-    border-radius: 8px;
+}
+
+header nav {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 h1 {
@@ -203,7 +206,7 @@ input[type=number]:focus {
 
 /* Dark mode */
 body.dark { background: #1a1512; color: #e0d6c8; }
-body.dark header { background: #2c2420; border-color: #3b2f2f; }
+body.dark header { border-color: #3b2f2f; }
 body.dark h1 { color: #f0ebe3; }
 body.dark nav a { color: #c4b5a4; }
 body.dark nav a:hover { border-bottom-color: #c4b5a4; }
