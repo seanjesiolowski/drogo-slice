@@ -7,12 +7,12 @@ from httpx import AsyncClient
 async def seeded_data(client: AsyncClient):
     """Create categories and items with various stock levels."""
     cat = await client.post(
-        "/api/categories/", json={"name": "Milk", "display_order": 1}
+        "/api/categories/", json={"name": "Milk"}
     )
     cat_id = cat.json()["id"]
 
     cat2 = await client.post(
-        "/api/categories/", json={"name": "Beans", "display_order": 2}
+        "/api/categories/", json={"name": "Beans"}
     )
     cat2_id = cat2.json()["id"]
 
@@ -120,7 +120,7 @@ async def test_low_stock_report_includes_category_name(
 @pytest.mark.asyncio
 async def test_low_stock_report_empty_when_all_stocked(client: AsyncClient):
     cat = await client.post(
-        "/api/categories/", json={"name": "Cups", "display_order": 1}
+        "/api/categories/", json={"name": "Cups"}
     )
     cat_id = cat.json()["id"]
 

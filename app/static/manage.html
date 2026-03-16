@@ -56,6 +56,25 @@ nav a:hover { border-bottom-color: #5a4a3a; }
     margin-bottom: 14px;
 }
 
+.card-group {
+    margin-bottom: 14px;
+}
+
+.card-group .card {
+    margin-bottom: 0;
+}
+
+.card-group .card:first-child {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: none;
+}
+
+.card-group .card:last-child {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
 .card h2 {
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 1.05rem;
@@ -235,18 +254,25 @@ button:active { transform: scale(0.98); }
     <nav><a href="/">Scan</a></nav>
 </header>
 
+<div class="card-group">
+<div class="card">
+    <h2>Categories</h2>
+    <div id="catList"><p class="empty">Loading...</p></div>
+</div>
+
 <div class="card">
     <h2>Add Category</h2>
     <div class="form-group">
         <input type="text" id="cat-name" placeholder="Name">
-        <input type="number" id="cat-order" placeholder="Display order" min="0">
     </div>
     <button onclick="createCategory()">Create</button>
 </div>
+</div>
 
+<div class="card-group">
 <div class="card">
-    <h2>Categories</h2>
-    <div id="catList"><p class="empty">Loading...</p></div>
+    <h2>All Items</h2>
+    <div id="itemList"><p class="empty">Loading...</p></div>
 </div>
 
 <div class="card">
@@ -267,10 +293,6 @@ button:active { transform: scale(0.98); }
     </div>
     <button onclick="createItem()">Create</button>
 </div>
-
-<div class="card">
-    <h2>All Items</h2>
-    <div id="itemList"><p class="empty">Loading...</p></div>
 </div>
 
 </div>
@@ -301,7 +323,6 @@ async function loadCategories() {
             <div class="entry">
                 <div class="entry-name">${esc(c.name)}</div>
                 <div class="entry-controls">
-                    <span class="entry-meta">Order: ${c.display_order}</span>
                     <span class="spacer"></span>
                     <button class="btn-danger-sm" onclick="deleteCategory(${c.id})">Delete</button>
                 </div>
@@ -314,18 +335,16 @@ async function loadCategories() {
 
 async function createCategory() {
     const name = document.getElementById('cat-name').value.trim();
-    const order = parseInt(document.getElementById('cat-order').value);
     if (!name) { alert('Name required'); return; }
 
     const res = await fetch('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, display_order: isNaN(order) ? undefined : order })
+        body: JSON.stringify({ name })
     });
 
     if (res.ok) {
         document.getElementById('cat-name').value = '';
-        document.getElementById('cat-order').value = '';
         loadCategories();
     } else {
         const d = await res.json();

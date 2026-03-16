@@ -6,7 +6,7 @@ from httpx import AsyncClient
 @pytest_asyncio.fixture
 async def category_id(client: AsyncClient) -> int:
     response = await client.post(
-        "/api/categories/", json={"name": "Milk", "display_order": 1}
+        "/api/categories/", json={"name": "Milk"}
     )
     return response.json()["id"]
 

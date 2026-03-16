@@ -16,6 +16,5 @@ class Category(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    display_order: Mapped[int] = mapped_column(Integer, default=0)
 
     items: Mapped[list["Item"]] = relationship(back_populates="category")

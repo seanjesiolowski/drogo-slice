@@ -3,7 +3,6 @@ from pydantic import BaseModel, ConfigDict
 
 class CategoryCreate(BaseModel):
     name: str
-    display_order: int = 0
 
 
 class CategoryResponse(BaseModel):
@@ -11,4 +10,3 @@ class CategoryResponse(BaseModel):
 
     id: int
     name: str
-    display_order: int

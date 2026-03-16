@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/categories", tags=["categories"])
 @router.get("/", response_model=list[CategoryResponse])
 async def list_categories(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Category).order_by(Category.display_order, Category.name)
+        select(Category).order_by(Category.name)
     )
     return result.scalars().all()
 
@@ -23,7 +23,7 @@ async def create_category(payload: CategoryCreate, db: AsyncSession = Depends(ge
     """Create a new inventory category.
 
     Args:
-        payload: Category data (name and optional display_order)
+        payload: Category data (name)
         db: Database session
 
     Returns:
@@ -32,7 +32,7 @@ async def create_category(payload: CategoryCreate, db: AsyncSession = Depends(ge
     Raises:
         HTTPException: 409 if category name already exists
     """
-    category = Category(name=payload.name, display_order=payload.display_order)
+    category = Category(name=payload.name)
     db.add(category)
     try:
         await db.commit()

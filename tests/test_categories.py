@@ -5,32 +5,24 @@ from httpx import AsyncClient
 @pytest.mark.asyncio
 async def test_create_category(client: AsyncClient):
     response = await client.post(
-        "/api/categories/", json={"name": "Milk", "display_order": 1}
+        "/api/categories/", json={"name": "Milk"}
     )
     assert response.status_code == 201
     data = response.json()
     assert data["name"] == "Milk"
-    assert data["display_order"] == 1
     assert "id" in data
 
 
 @pytest.mark.asyncio
 async def test_list_categories(client: AsyncClient):
-    await client.post("/api/categories/", json={"name": "Syrups", "display_order": 2})
-    await client.post("/api/categories/", json={"name": "Beans", "display_order": 1})
+    await client.post("/api/categories/", json={"name": "Syrups"})
+    await client.post("/api/categories/", json={"name": "Beans"})
 
     response = await client.get("/api/categories/")
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 2
-    assert data[0]["name"] == "Beans"
-
-
-@pytest.mark.asyncio
-async def test_create_category_default_display_order(client: AsyncClient):
-    response = await client.post("/api/categories/", json={"name": "Cups"})
-    assert response.status_code == 201
-    assert response.json()["display_order"] == 0
+    assert data[0]["name"] == "Beans"  # alphabetical order
 
 
 @pytest.mark.asyncio
@@ -43,11 +35,11 @@ async def test_list_categories_empty(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_create_category_duplicate_name_returns_409(client: AsyncClient):
     # Create first category
-    await client.post("/api/categories/", json={"name": "Milk", "display_order": 1})
+    await client.post("/api/categories/", json={"name": "Milk"})
 
     # Try to create duplicate - should return 409 Conflict
     response = await client.post(
-        "/api/categories/", json={"name": "Milk", "display_order": 2}
+        "/api/categories/", json={"name": "Milk"}
     )
     assert response.status_code == 409
     assert "already exists" in response.json()["detail"]
@@ -57,7 +49,7 @@ async def test_create_category_duplicate_name_returns_409(client: AsyncClient):
 async def test_delete_category(client: AsyncClient):
     # Create a category
     create_response = await client.post(
-        "/api/categories/", json={"name": "Syrups", "display_order": 1}
+        "/api/categories/", json={"name": "Syrups"}
     )
     category_id = create_response.json()["id"]
 
@@ -81,7 +73,7 @@ async def test_delete_category_not_found(client: AsyncClient):
 async def test_delete_category_returns_204_no_content(client: AsyncClient):
     # Create a category
     cat_response = await client.post(
-        "/api/categories/", json={"name": "Milk", "display_order": 1}
+        "/api/categories/", json={"name": "Milk"}
     )
     category_id = cat_response.json()["id"]
 

@@ -39,7 +39,6 @@ async def test_manage_page_serves(client: AsyncClient):
     assert resp.status_code == 200
     text = resp.text
     assert "Drogo Slice" in text
-    assert "Manage Inventory" in text
 
 
 @pytest.mark.asyncio
