@@ -47,10 +47,13 @@ nav a {
     font-size: 0.85rem;
     color: #5a4a3a;
     text-decoration: none;
-    border-bottom: 1px solid transparent;
+    background: #f0ebe3;
+    border: 1px solid #ddd5c8;
+    border-radius: 6px;
+    padding: 4px 12px;
 }
 
-nav a:hover { border-bottom-color: #5a4a3a; }
+nav a:hover { background: #e8e0d4; }
 
 .card {
     background: #faf7f2;
@@ -208,8 +211,8 @@ input[type=number]:focus {
 body.dark { background: #1a1512; color: #e0d6c8; }
 body.dark header { border-color: #3b2f2f; }
 body.dark h1 { color: #f0ebe3; }
-body.dark nav a { color: #c4b5a4; }
-body.dark nav a:hover { border-bottom-color: #c4b5a4; }
+body.dark nav a { color: #c4b5a4; background: #2c2420; border-color: #3b2f2f; }
+body.dark nav a:hover { background: #3b2f2f; }
 body.dark .card { background: #2c2420; border-color: #3b2f2f; }
 body.dark .card h2 { color: #f0ebe3; border-bottom-color: #3b2f2f; }
 body.dark button { background: #e8e0d4; color: #1a1512; }
@@ -237,8 +240,8 @@ body.dark .status-critical { color: #e05545; }
 <header>
     <h1>Drogo Slice</h1>
     <nav>
-        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" id="themeBtn"></button>
         <a href="/manage">Manage</a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" id="themeBtn"></button>
     </nav>
 </header>
 
