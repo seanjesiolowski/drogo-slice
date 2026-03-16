@@ -248,6 +248,49 @@ button:active { transform: scale(0.98); }
     padding: 16px;
     font-size: 0.85rem;
 }
+
+.theme-toggle {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px;
+    min-height: auto;
+    width: auto;
+}
+
+.theme-toggle:hover { background: none; opacity: 0.7; }
+
+/* Dark mode */
+body.dark { background: #1a1512; color: #e0d6c8; }
+body.dark header { background: #2c2420; border-color: #3b2f2f; }
+body.dark h1 { color: #f0ebe3; }
+body.dark nav a { color: #c4b5a4; }
+body.dark nav a:hover { border-bottom-color: #c4b5a4; }
+body.dark .card { background: #2c2420; border-color: #3b2f2f; }
+body.dark .card-group .card:first-child { border-bottom-color: transparent; }
+body.dark .card h2 { color: #f0ebe3; border-bottom-color: #3b2f2f; }
+body.dark button { background: #e8e0d4; color: #1a1512; }
+body.dark button:hover { background: #f0ebe3; }
+body.dark .btn-outline { background: transparent; color: #e8e0d4; border-color: #e8e0d4; }
+body.dark .btn-outline:hover { background: #2c2420; }
+body.dark .btn-danger { background: #b5372a; color: #faf7f2; }
+body.dark .btn-danger:hover { background: #963025; }
+body.dark .btn-danger-sm { background: transparent; color: #e05545; border-color: #e05545; }
+body.dark .btn-danger-sm:hover { background: #2a1510; }
+body.dark .entry { background: #1a1512; border-left-color: #e8e0d4; }
+body.dark .entry-name { color: #f0ebe3; background: #3b2f2f; }
+body.dark .entry-meta { color: #a09585; }
+body.dark .bump { color: #e8e0d4; }
+body.dark .bump:hover { color: #a09585; }
+body.dark input, body.dark select { background: #1a1512; color: #e0d6c8; border-color: #3b2f2f; }
+body.dark input:focus, body.dark select:focus { border-color: #e8e0d4; }
+body.dark select { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e8e0d4' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e"); }
+body.dark .edit-form { border-top-color: #3b2f2f; }
+body.dark .status-ok { color: #6abf5e; }
+body.dark .status-low { color: #d4a017; }
+body.dark .status-critical { color: #e05545; }
+body.dark .empty { color: #6b5b4e; }
 </style>
 </head>
 <body>
@@ -255,7 +298,10 @@ button:active { transform: scale(0.98); }
 
 <header>
     <h1>Drogo Slice</h1>
-    <nav><a href="/">Scan</a></nav>
+    <nav>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" id="themeBtn"></button>
+        <a href="/">Scan</a>
+    </nav>
 </header>
 
 <div class="card-group">
@@ -302,6 +348,19 @@ button:active { transform: scale(0.98); }
 </div>
 
 <script>
+function toggleTheme() {
+    const dark = document.body.classList.toggle('dark');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    document.getElementById('themeBtn').textContent = dark ? '\u2600\uFE0F' : '\uD83C\uDF19';
+}
+
+(function initTheme() {
+    const saved = localStorage.getItem('theme');
+    const dark = saved === 'dark';
+    if (dark) document.body.classList.add('dark');
+    document.getElementById('themeBtn').textContent = dark ? '\u2600\uFE0F' : '\uD83C\uDF19';
+})();
+
 let categories = [];
 
 window.addEventListener('DOMContentLoaded', () => {
