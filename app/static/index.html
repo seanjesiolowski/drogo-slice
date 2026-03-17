@@ -281,6 +281,14 @@ body.dark .status-critical { color: #e05545; }
 }
 
 body.dark .inv-row { border-bottom-color: #3b2f2f; }
+
+.demo-scan {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+}
+.demo-scan input { width: 80px; }
 </style>
 </head>
 <body>
@@ -302,6 +310,10 @@ body.dark .inv-row { border-bottom-color: #3b2f2f; }
         <button id="stopBtn" class="secondary" onclick="stopScanner()" style="display:none;">Stop</button>
     </div>
     <div id="qr-reader"></div>
+    <div class="demo-scan">
+        <input type="number" id="demoId" placeholder="Item #" min="1">
+        <button class="secondary" onclick="onScan(document.getElementById('demoId').value)">Simulate Scan</button>
+    </div>
 </div>
 
 <div class="card">
@@ -390,15 +402,21 @@ async function onScan(text) {
 
 function showItem(item, cls, lbl) {
     document.getElementById('resultContent').innerHTML = `
-        <div class="item-name">#${item.id} — ${esc(item.name)}</div>
-        <div class="item-meta">
-            <strong>${item.current_quantity}</strong> / ${item.par_level} ${esc(item.unit)}
-            &middot; <span class="${cls}">${lbl}</span>
+        <div class="inv-row" style="border-bottom:none;">
+            <div class="inv-pm">
+                <button onclick="bump(${item.id},1,${item.current_quantity})">+</button>
+                <button onclick="bump(${item.id},-1,${item.current_quantity})">−</button>
+            </div>
+            <div class="inv-info">
+                <div class="item-name">#${item.id} — ${esc(item.name)}</div>
+                <div class="item-meta">
+                    <strong>${item.current_quantity}</strong> / ${item.par_level} ${esc(item.unit)}
+                    &middot; <span class="${cls}">${lbl}</span>
+                </div>
+            </div>
         </div>
         <div class="qty-controls">
-            <span class="bump" onclick="bump(${item.id},-1,${item.current_quantity})">-</span>
             <input type="number" id="qtyIn" value="${item.current_quantity}">
-            <span class="bump" onclick="bump(${item.id},1,${item.current_quantity})">+</span>
             <button onclick="setQty(${item.id})" style="min-height:38px;padding:8px 14px;">Set</button>
         </div>`;
     document.getElementById('scanResult').style.display = 'block';
@@ -412,6 +430,7 @@ async function bump(id, delta, current) {
         body: JSON.stringify({ current_quantity: Math.max(0, current + delta) })
     });
     onScan(String(id));
+    loadInventory();
 }
 
 async function setQty(id) {
@@ -424,6 +443,7 @@ async function setQty(id) {
         body: JSON.stringify({ current_quantity: qty })
     });
     onScan(String(id));
+    loadInventory();
 }
 
 function showError(msg) {
