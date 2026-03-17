@@ -231,6 +231,56 @@ body.dark .placeholder { color: #6b5b4e; }
 body.dark .status-ok { color: #6abf5e; }
 body.dark .status-low { color: #d4a017; }
 body.dark .status-critical { color: #e05545; }
+
+/* Inventory list */
+.inv-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd5c8;
+}
+.inv-row:last-child { border-bottom: none; }
+
+.inv-pm {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.inv-pm button {
+    width: 36px;
+    height: 32px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0;
+    min-height: auto;
+    border-radius: 0;
+    line-height: 1;
+}
+
+.inv-pm button:first-child { border-radius: 6px 6px 0 0; }
+.inv-pm button:last-child { border-radius: 0 0 6px 6px; }
+
+.inv-info {
+    flex: 1;
+    text-align: left;
+    min-width: 0;
+}
+
+.inv-info .item-name {
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inv-info .item-meta {
+    font-size: 0.8rem;
+}
+
+body.dark .inv-row { border-bottom-color: #3b2f2f; }
 </style>
 </head>
 <body>
@@ -260,6 +310,11 @@ body.dark .status-critical { color: #e05545; }
         <div id="resultContent"></div>
     </div>
     <p id="placeholder" class="placeholder">Scan a QR code to see item details</p>
+</div>
+
+<div class="card">
+    <h2>Inventory</h2>
+    <div id="inventoryList"></div>
 </div>
 
 </div>
@@ -382,6 +437,50 @@ function esc(s) {
     d.textContent = s;
     return d.innerHTML;
 }
+
+async function loadInventory() {
+    const list = document.getElementById('inventoryList');
+    try {
+        const res = await fetch('/api/items/');
+        const items = await res.json();
+        if (!items.length) {
+            list.innerHTML = '<p class="placeholder">No items yet</p>';
+            return;
+        }
+        list.innerHTML = items.map(it => {
+            const ratio = it.par_level > 0 ? it.current_quantity / it.par_level : 1;
+            let cls = 'status-ok', lbl = 'OK';
+            if (ratio <= 0.25) { cls = 'status-critical'; lbl = 'CRITICAL'; }
+            else if (ratio <= 0.5) { cls = 'status-low'; lbl = 'LOW'; }
+            return `<div class="inv-row">
+                <div class="inv-pm">
+                    <button onclick="invBump(${it.id},1,${it.current_quantity})">+</button>
+                    <button onclick="invBump(${it.id},-1,${it.current_quantity})">−</button>
+                </div>
+                <div class="inv-info">
+                    <div class="item-name">${esc(it.name)}</div>
+                    <div class="item-meta">
+                        <strong>${it.current_quantity}</strong> / ${it.par_level} ${esc(it.unit)}
+                        &middot; <span class="${cls}">${lbl}</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch {
+        list.innerHTML = '<p class="error-msg">Failed to load inventory</p>';
+    }
+}
+
+async function invBump(id, delta, current) {
+    await fetch('/api/items/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_quantity: Math.max(0, current + delta) })
+    });
+    loadInventory();
+}
+
+loadInventory();
 </script>
 </body>
 </html>
