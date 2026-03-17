@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db
 from app.models.category import Category
+from app.models.item import Item
 from app.schemas.category import CategoryCreate, CategoryResponse
 
 router = APIRouter(prefix="/api/categories", tags=["categories"])
@@ -55,10 +56,19 @@ async def delete_category(category_id: int, db: AsyncSession = Depends(get_db)):
 
     Raises:
         HTTPException: 404 if category not found
+        HTTPException: 409 if category still has items
     """
     result = await db.execute(select(Category).where(Category.id == category_id))
     category = result.scalar_one_or_none()
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
+    item_count = await db.scalar(
+        select(func.count()).select_from(Item).where(Item.category_id == category_id)
+    )
+    if item_count:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot delete '{category.name}' — it still has {item_count} item{'s' if item_count != 1 else ''}. Remove or reassign them first.",
+        )
     await db.delete(category)
     await db.commit()

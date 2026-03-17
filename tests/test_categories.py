@@ -80,3 +80,33 @@ async def test_delete_category_returns_204_no_content(client: AsyncClient):
     # Delete the category
     delete_response = await client.delete(f"/api/categories/{category_id}")
     assert delete_response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_delete_category_with_items_returns_409(client: AsyncClient):
+    cat = await client.post("/api/categories/", json={"name": "Milk"})
+    category_id = cat.json()["id"]
+
+    await client.post("/api/items/", json={
+        "name": "Whole Milk",
+        "category_id": category_id,
+        "quantity": 5,
+        "unit": "gal",
+    })
+
+    response = await client.delete(f"/api/categories/{category_id}")
+    assert response.status_code == 409
+    assert "still has 1 item" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_recreate_deleted_category(client: AsyncClient):
+    cat = await client.post("/api/categories/", json={"name": "Seasonal"})
+    category_id = cat.json()["id"]
+
+    delete_response = await client.delete(f"/api/categories/{category_id}")
+    assert delete_response.status_code == 204
+
+    recreate = await client.post("/api/categories/", json={"name": "Seasonal"})
+    assert recreate.status_code == 201
+    assert recreate.json()["name"] == "Seasonal"
