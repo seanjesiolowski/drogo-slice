@@ -6,9 +6,8 @@
 **Deadline: Sunday, April 5th — MVP**
 
 ## Features
-
-- [ ] Modal bump (more obvious)
-- [ ] Feedback to user: bump (not) occurred
-- [ ] Bug tracking/reporting right in the web app
+- [ ] Product images
+- [ ] QR code factory
 - [ ] System to **really** back up the data
+- [ ] Bug tracking/reporting right in the web app
 - [ ] Monitoring: in stock room but no adjustment and other reviews (motion detection?)
