@@ -15,3 +15,4 @@ Reviewing drogo-slice
 - [ ] Feedback to user: bump (not) occurred
 - [ ] Bug tracking/reporting right in the web app
 - [ ] System to **really** back up the data
+- [ ] Monitoring: in stock room but no adjustment and other reviews (motion detection?)
