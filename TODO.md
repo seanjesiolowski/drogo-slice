@@ -5,10 +5,6 @@
 
 **Deadline: Sunday, April 5th — MVP**
 
-## Current Focus
-
-Reviewing drogo-slice
-
 ## Features
 
 - [ ] Modal bump (more obvious)
