@@ -302,6 +302,66 @@ body.dark .inv-row { border-bottom-color: #3b2f2f; }
     padding: 18px 0 8px;
 }
 body.dark .tagline { color: #5a4f44; }
+
+/* Modal overlay */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.modal-overlay.active { display: flex; }
+
+.modal {
+    background: #faf7f2;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    animation: modalIn 0.2s ease-out;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #8a7b6e;
+    min-height: auto;
+    padding: 0;
+    line-height: 1;
+}
+.modal-close:hover { color: #3b2f2f; }
+
+.modal h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #3b2f2f;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd5c8;
+    text-align: center;
+}
+
+body.dark .modal { background: #2c2420; }
+body.dark .modal h2 { color: #f0ebe3; border-bottom-color: #3b2f2f; }
+body.dark .modal-close { color: #6b5b4e; }
+body.dark .modal-close:hover { color: #e8e0d4; }
 </style>
 </head>
 <body>
@@ -329,12 +389,12 @@ body.dark .tagline { color: #5a4f44; }
     </div>
 </div>
 
-<div class="card">
-    <h2>Last Scan</h2>
-    <div id="scanResult" class="result" style="display:none;">
+<div class="modal-overlay" id="scanModal" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <h2>Last Scan</h2>
         <div id="resultContent"></div>
     </div>
-    <p id="placeholder" class="placeholder">Scan a QR code to see item details</p>
 </div>
 
 <div class="card">
@@ -434,8 +494,11 @@ function showItem(item, cls, lbl) {
             <input type="number" id="qtyIn" value="${item.current_quantity}">
             <button onclick="setQty(${item.id})" style="min-height:38px;padding:8px 14px;">Set</button>
         </div>`;
-    document.getElementById('scanResult').style.display = 'block';
-    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('scanModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('scanModal').classList.remove('active');
 }
 
 async function bump(id, delta, current) {
@@ -463,8 +526,7 @@ async function setQty(id) {
 
 function showError(msg) {
     document.getElementById('resultContent').innerHTML = '<div class="error-msg">' + msg + '</div>';
-    document.getElementById('scanResult').style.display = 'block';
-    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('scanModal').classList.add('active');
 }
 
 function esc(s) {
