@@ -344,6 +344,11 @@ body.dark .tagline { color: #5a4f44; }
     min-height: auto;
     padding: 0;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
 }
 .modal-close:hover { color: #3b2f2f; }
 
@@ -391,7 +396,7 @@ body.dark .modal-close:hover { color: #e8e0d4; }
 
 <div class="modal-overlay" id="scanModal" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <button class="modal-close" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg></button>
         <h2>Last Scan</h2>
         <div id="resultContent"></div>
     </div>

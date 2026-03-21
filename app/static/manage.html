@@ -299,6 +299,70 @@ body.dark .status-ok { color: #6abf5e; }
 body.dark .status-low { color: #d4a017; }
 body.dark .status-critical { color: #e05545; }
 body.dark .empty { color: #6b5b4e; }
+
+/* Modal overlay */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.modal-overlay.active { display: flex; }
+
+.modal {
+    background: #faf7f2;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    animation: modalIn 0.2s ease-out;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #8a7b6e;
+    min-height: auto;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+.modal-close:hover { color: #3b2f2f; }
+
+.modal h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #3b2f2f;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd5c8;
+}
+
+body.dark .modal { background: #2c2420; }
+body.dark .modal h2 { color: #f0ebe3; border-bottom-color: #3b2f2f; }
+body.dark .modal-close { color: #6b5b4e; }
+body.dark .modal-close:hover { color: #e8e0d4; }
 </style>
 </head>
 <body>
@@ -351,6 +415,14 @@ body.dark .empty { color: #6b5b4e; }
     </div>
     <button onclick="createItem()">Create</button>
 </div>
+</div>
+
+<div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
+    <div class="modal">
+        <button class="modal-close" onclick="closeEditModal()"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg></button>
+        <h2 id="editModalTitle">Edit Item</h2>
+        <div id="editModalContent"></div>
+    </div>
 </div>
 
 </div>
@@ -467,32 +539,7 @@ async function loadItems() {
                 <span class="bump" onclick="bumpQty(${item.id},-1,${item.current_quantity})">-</span>
                 <span class="bump" onclick="bumpQty(${item.id},1,${item.current_quantity})">+</span>
                 <span class="spacer"></span>
-                <button class="btn-sm btn-outline" onclick="toggleEdit(${item.id})">Edit</button>
-            </div>
-            <div class="edit-form" id="edit-${item.id}" style="display:none;">
-                <div class="form-group">
-                    <input type="text" id="en-${item.id}" value="${esc(item.name)}" placeholder="Name">
-                    <input type="text" id="eu-${item.id}" value="${esc(item.unit)}" placeholder="Unit">
-                </div>
-                <div class="form-group">
-                    <div class="row">
-                        <input type="number" id="eq-${item.id}" value="${item.current_quantity}" placeholder="Qty" min="0">
-                        <input type="number" id="ep-${item.id}" value="${item.par_level}" placeholder="Par" min="0">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <select id="ec-${item.id}">${catOpts}</select>
-                </div>
-                <div class="form-group">
-                    <div class="row">
-                        <input type="number" id="ri-${item.id}" placeholder="New QR #" min="1">
-                        <button class="btn-sm btn-outline" onclick="reassign(${item.id})">Reassign</button>
-                    </div>
-                </div>
-                <div class="row">
-                    <button onclick="saveEdits(${item.id})">Save</button>
-                    <button class="btn-danger" onclick="deleteItem(${item.id})">Delete</button>
-                </div>
+                <button class="btn-sm btn-outline" onclick="openEditModal(${item.id}, '${esc(item.name).replace(/'/g, "\\'")}', '${esc(item.unit).replace(/'/g, "\\'")}', ${item.current_quantity}, ${item.par_level}, ${item.category_id})">Edit</button>
             </div>
         </div>`;
     }).join('');
@@ -527,9 +574,41 @@ async function createItem() {
     }
 }
 
-function toggleEdit(id) {
-    const el = document.getElementById('edit-' + id);
-    el.style.display = el.style.display === 'none' ? '' : 'none';
+function openEditModal(id, name, unit, qty, par, catId) {
+    const catOpts = categories.map(c =>
+        `<option value="${c.id}" ${c.id === catId ? 'selected' : ''}>${esc(c.name)}</option>`
+    ).join('');
+
+    document.getElementById('editModalTitle').textContent = 'Edit #' + id + ' — ' + name;
+    document.getElementById('editModalContent').innerHTML = `
+        <div class="form-group">
+            <input type="text" id="en-${id}" value="${name}" placeholder="Name">
+            <input type="text" id="eu-${id}" value="${unit}" placeholder="Unit">
+        </div>
+        <div class="form-group">
+            <div class="row">
+                <input type="number" id="eq-${id}" value="${qty}" placeholder="Qty" min="0">
+                <input type="number" id="ep-${id}" value="${par}" placeholder="Par" min="0">
+            </div>
+        </div>
+        <div class="form-group">
+            <select id="ec-${id}">${catOpts}</select>
+        </div>
+        <div class="form-group">
+            <div class="row">
+                <input type="number" id="ri-${id}" placeholder="New QR #" min="1">
+                <button class="btn-sm btn-outline" onclick="reassign(${id})">Reassign</button>
+            </div>
+        </div>
+        <div class="row">
+            <button onclick="saveEdits(${id})">Save</button>
+            <button class="btn-danger" onclick="deleteItem(${id})">Delete</button>
+        </div>`;
+    document.getElementById('editModal').classList.add('active');
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
 }
 
 async function bumpQty(id, delta, current) {
@@ -553,7 +632,7 @@ async function saveEdits(id) {
             category_id: parseInt(document.getElementById('ec-' + id).value)
         })
     });
-    if (res.ok) loadItems();
+    if (res.ok) { closeEditModal(); loadItems(); }
     else { const d = await res.json(); alert(d.detail || 'Failed'); }
 }
 
@@ -563,14 +642,14 @@ async function reassign(oldId) {
     if (!confirm('Reassign #' + oldId + ' to #' + newId + '?')) return;
 
     const res = await fetch('/api/items/' + oldId + '/reassign?new_id=' + newId, { method: 'POST' });
-    if (res.ok) loadItems();
+    if (res.ok) { closeEditModal(); loadItems(); }
     else { const d = await res.json(); alert(d.detail || 'Failed'); }
 }
 
 async function deleteItem(id) {
     if (!confirm('Delete item #' + id + '?')) return;
     const res = await fetch('/api/items/' + id, { method: 'DELETE' });
-    if (res.ok) loadItems();
+    if (res.ok) { closeEditModal(); loadItems(); }
     else { const d = await res.json(); alert(d.detail || 'Failed'); }
 }
 
