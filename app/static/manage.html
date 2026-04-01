@@ -488,7 +488,7 @@ async function createCategory() {
 
     if (res.ok) {
         document.getElementById('cat-name').value = '';
-        loadCategories();
+        await loadCategories();
     } else {
         const d = await res.json();
         alert(d.detail || 'Failed');
@@ -498,7 +498,7 @@ async function createCategory() {
 async function deleteCategory(id) {
     if (!confirm('Delete this category?')) return;
     const res = await fetch('/api/categories/' + id, { method: 'DELETE' });
-    if (res.ok) { loadCategories(); loadItems(); }
+    if (res.ok) { await loadCategories(); loadItems(); }
     else { const d = await res.json(); alert(d.detail || 'Failed'); }
 }
 

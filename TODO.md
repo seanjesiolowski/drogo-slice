@@ -5,12 +5,15 @@
 
 **Deadline: Sunday, April 5th — MVP**
 
+## Bugs
+
+- [ ] Still issues creating categories (Category with name *'whatever' already exists; *seems for anything)
+
 ## MVP Features
 
-- [x] Modal bump (more obvious)
-- [x] Feedback to user: bump (not) occurred
-- [ ] QR code factory
-- [ ] System to **really** back up the data
+- [ ] QR CODE MANAGER with link, etc.
+- [ ] System to **really** back up the data (?!!)
+- [ ] (be able to) change username and password
 
 ## Additional Features
 
