@@ -7,7 +7,7 @@
 
 ## Bugs
 
-- [ ] Still issues creating categories (Category with name *'whatever' already exists; *seems for anything)
+- [x] Still issues creating categories (Category with name *'whatever' already exists; *seems for anything)
 
 ## MVP Features
 
