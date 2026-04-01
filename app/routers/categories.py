@@ -33,17 +33,19 @@ async def create_category(payload: CategoryCreate, db: AsyncSession = Depends(ge
     Raises:
         HTTPException: 409 if category name already exists
     """
-    category = Category(name=payload.name)
-    db.add(category)
-    try:
-        await db.commit()
-        await db.refresh(category)
-    except IntegrityError:
-        await db.rollback()
+    # Check for duplicate name explicitly before inserting
+    existing = await db.execute(
+        select(Category).where(func.lower(Category.name) == payload.name.strip().lower())
+    )
+    if existing.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Category with name '{payload.name}' already exists",
         )
+    category = Category(name=payload.name.strip())
+    db.add(category)
+    await db.commit()
+    await db.refresh(category)
     return category
 
 
