@@ -455,54 +455,57 @@ function makeQrDataUrl(value, size) {
 
 // --- Load & Render ---
 async function loadItems() {
-    try {
-        const res = await fetch('/api/items');
-        items = await res.json();
-    } catch { items = []; }
-
-    // Compute next available ID (first gap or max+1)
-    const usedIds = new Set(items.map(i => i.id));
-    nextAvailableId = 1;
-    while (usedIds.has(nextAvailableId)) nextAvailableId++;
-    // For advance labels, start after max existing ID to keep things simple
-    const maxId = items.length > 0 ? Math.max(...items.map(i => i.id)) : 0;
-    const advanceStart = maxId + 1;
-    document.getElementById('advanceHint').textContent = items.length > 0
-        ? `Starting from #${advanceStart} (${items.length} item${items.length === 1 ? '' : 's'} in system)`
-        : 'No items yet — labels will start from #1';
-    document.getElementById('rangeFrom').value = advanceStart;
-    document.getElementById('rangeTo').value = advanceStart + 19;
-
     const grid = document.getElementById('qrGrid');
     const desc = document.getElementById('assignedDesc');
-    if (items.length === 0) {
-        grid.innerHTML = '<p class="empty">No items yet. Use Print Advance Labels below to print QR codes ahead of time.</p>';
-        desc.textContent = 'No items assigned yet.';
-        updateCount();
+
+    try {
+        const res = await fetch('/api/items');
+        if (!res.ok) throw new Error('API returned ' + res.status);
+        items = await res.json();
+    } catch (err) {
+        items = [];
+        console.error('Failed to load items:', err);
+        grid.innerHTML = '<p class="empty">Could not load items. Check your connection and refresh.</p>';
+        desc.textContent = 'Error loading items.';
         return;
     }
 
-    desc.textContent = items.length + ' item' + (items.length === 1 ? '' : 's') + ' with QR codes assigned. Select items to print their labels.';
+    // Render assigned items grid first
+    if (items.length === 0) {
+        grid.innerHTML = '<p class="empty">No items yet. Use Print Advance Labels below to print QR codes ahead of time.</p>';
+        desc.textContent = 'No items assigned yet.';
+    } else {
+        desc.textContent = items.length + ' item' + (items.length === 1 ? '' : 's') + ' with QR codes assigned. Select items to print their labels.';
+        items.sort(function(a, b) { return a.id - b.id; });
 
-    // Sort by ID
-    items.sort((a, b) => a.id - b.id);
-
-    grid.innerHTML = items.map(item => {
-        const dataUrl = makeQrDataUrl(item.id, 120);
-        const sel = selected.has(item.id) ? ' selected' : '';
-        return `
-        <div class="qr-item${sel}" id="qi-${item.id}" onclick="toggleSelect(${item.id}, event)">
-            <div class="check" onclick="toggleSelect(${item.id}, event)">${selected.has(item.id) ? '✓' : ''}</div>
-            <img src="${dataUrl}" width="100" height="100" alt="QR ${item.id}">
-            <div class="qr-id">#${item.id}</div>
-            <div class="qr-name">${esc(item.name)}</div>
-            <div class="qr-actions">
-                <button class="btn-sm btn-outline" onclick="openReassign(${item.id}, '${esc(item.name).replace(/'/g, "\\'")}'); event.stopPropagation();">Reassign</button>
-            </div>
-        </div>`;
-    }).join('');
-
+        grid.innerHTML = items.map(function(item) {
+            var dataUrl = makeQrDataUrl(item.id, 120);
+            var sel = selected.has(item.id) ? ' selected' : '';
+            return '<div class="qr-item' + sel + '" id="qi-' + item.id + '" onclick="toggleSelect(' + item.id + ', event)">'
+                + '<div class="check" onclick="toggleSelect(' + item.id + ', event)">' + (selected.has(item.id) ? '\u2713' : '') + '</div>'
+                + '<img src="' + dataUrl + '" width="100" height="100" alt="QR ' + item.id + '">'
+                + '<div class="qr-id">#' + item.id + '</div>'
+                + '<div class="qr-name">' + esc(item.name) + '</div>'
+                + '<div class="qr-actions">'
+                + '<button class="btn-sm btn-outline" onclick="openReassign(' + item.id + ', \'' + esc(item.name).replace(/'/g, "\\'") + '\'); event.stopPropagation();">Reassign</button>'
+                + '</div></div>';
+        }).join('');
+    }
     updateCount();
+
+    // Update advance labels hints
+    var maxId = items.length > 0 ? Math.max.apply(null, items.map(function(i) { return i.id; })) : 0;
+    var advanceStart = maxId + 1;
+    var hint = document.getElementById('advanceHint');
+    if (hint) {
+        hint.textContent = items.length > 0
+            ? 'Starting from #' + advanceStart + ' (' + items.length + ' item' + (items.length === 1 ? '' : 's') + ' in system)'
+            : 'No items yet \u2014 labels will start from #1';
+    }
+    var rangeFrom = document.getElementById('rangeFrom');
+    var rangeTo = document.getElementById('rangeTo');
+    if (rangeFrom) rangeFrom.value = advanceStart;
+    if (rangeTo) rangeTo.value = advanceStart + 19;
 }
 
 // --- Selection ---
@@ -592,10 +595,10 @@ function printSelected() {
 function printAdvance() {
     const count = parseInt(document.getElementById('labelCount').value) || 20;
     if (count < 1 || count > 100) { alert('Enter a number between 1 and 100'); return; }
-    const maxId = items.length > 0 ? Math.max(...items.map(i => i.id)) : 0;
-    const start = maxId + 1;
-    const labels = [];
-    for (let i = start; i < start + count; i++) {
+    var maxId = items.length > 0 ? Math.max.apply(null, items.map(function(i) { return i.id; })) : 0;
+    var start = maxId + 1;
+    var labels = [];
+    for (var i = start; i < start + count; i++) {
         labels.push({ id: i, label: '' });
     }
     openPrintWindow(labels);
