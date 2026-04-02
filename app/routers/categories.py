@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db
@@ -44,15 +43,8 @@ async def create_category(payload: CategoryCreate, db: AsyncSession = Depends(ge
         )
     category = Category(name=payload.name.strip())
     db.add(category)
-    try:
-        await db.commit()
-        await db.refresh(category)
-    except IntegrityError as exc:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error creating category: {exc.orig}",
-        )
+    await db.commit()
+    await db.refresh(category)
     return category
 
 
