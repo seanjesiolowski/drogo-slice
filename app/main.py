@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import Depends, FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -36,9 +36,9 @@ app = FastAPI(
 
 
 class BasicAuthMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next: object) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         if request.url.path == "/health":
-            return await call_next(request)  # type: ignore[arg-type]
+            return await call_next(request)
 
         auth = request.headers.get("Authorization", "")
         if not auth.startswith("Basic "):
@@ -68,7 +68,7 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
                 headers={"WWW-Authenticate": 'Basic realm="Drogo Slice"'},
             )
 
-        return await call_next(request)  # type: ignore[arg-type]
+        return await call_next(request)
 
 
 app.add_middleware(BasicAuthMiddleware)
