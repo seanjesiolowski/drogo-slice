@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drogo Slice - QR Codes</title>
+<script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0ebe3;
+    color: #2c2420;
+    min-height: 100vh;
+    padding: 16px;
+    overflow-y: scroll;
+}
+
+.container {
+    max-width: 540px;
+    margin: 0 auto;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    padding: 14px 0;
+    margin-bottom: 14px;
+}
+
+header nav {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3b2f2f;
+}
+
+nav a {
+    font-size: 0.85rem;
+    color: #5a4a3a;
+    text-decoration: none;
+    background: #f0ebe3;
+    border: 1px solid #ddd5c8;
+    border-radius: 6px;
+    padding: 4px 12px;
+}
+
+nav a:hover { background: #e8e0d4; }
+
+.card {
+    background: #faf7f2;
+    border: 1px solid #ddd5c8;
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 14px;
+}
+
+.card h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #3b2f2f;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd5c8;
+}
+
+button {
+    background: #3b2f2f;
+    color: #faf7f2;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button:hover { background: #4e3e3e; }
+button:active { transform: scale(0.98); }
+
+.btn-sm {
+    width: auto;
+    min-height: 34px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #3b2f2f;
+    border: 1px solid #3b2f2f;
+}
+
+.btn-outline:hover { background: #f0ebe3; }
+
+input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd5c8;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: inherit;
+    background: #fff;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #3b2f2f;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.row {
+    display: flex;
+    gap: 8px;
+}
+
+.row > * { flex: 1; }
+
+.theme-toggle {
+    background: #f0ebe3;
+    border: 1px solid #ddd5c8;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    min-height: auto;
+    width: auto;
+}
+
+.theme-toggle:hover { background: #e8e0d4; opacity: 1; }
+
+.empty {
+    color: #a09585;
+    font-style: italic;
+    text-align: center;
+    padding: 16px;
+    font-size: 0.85rem;
+}
+
+/* QR item grid */
+.qr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.qr-item {
+    background: #f0ebe3;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd5c8;
+    position: relative;
+}
+
+.qr-item canvas, .qr-item img {
+    display: block;
+    margin: 0 auto 8px;
+}
+
+.qr-item .qr-id {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #3b2f2f;
+}
+
+.qr-item .qr-name {
+    font-size: 0.8rem;
+    color: #5a4a3a;
+    margin-top: 2px;
+    word-break: break-word;
+}
+
+.qr-item .qr-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.qr-item.selected {
+    border-color: #3b2f2f;
+    border-width: 2px;
+    background: #e8e0d4;
+}
+
+.qr-item .check {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #3b2f2f;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #3b2f2f;
+}
+
+.qr-item.selected .check {
+    background: #3b2f2f;
+    color: #faf7f2;
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.toolbar .count {
+    font-size: 0.85rem;
+    color: #8a7b6e;
+    margin-left: auto;
+}
+
+/* Modal overlay */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.modal-overlay.active { display: flex; }
+
+.modal {
+    background: #faf7f2;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    animation: modalIn 0.2s ease-out;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #8a7b6e;
+    min-height: auto;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+.modal-close:hover { color: #3b2f2f; }
+
+.modal h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #3b2f2f;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd5c8;
+}
+
+/* Dark mode */
+body.dark { background: #1a1512; color: #e0d6c8; }
+body.dark h1 { color: #f0ebe3; }
+body.dark nav a { color: #c4b5a4; background: #2c2420; border-color: #3b2f2f; }
+body.dark nav a:hover { background: #3b2f2f; }
+body.dark .card { background: #2c2420; border-color: #3b2f2f; }
+body.dark .card h2 { color: #f0ebe3; border-bottom-color: #3b2f2f; }
+body.dark button { background: #e8e0d4; color: #1a1512; }
+body.dark button:hover { background: #f0ebe3; }
+body.dark .btn-outline { background: transparent; color: #e8e0d4; border-color: #e8e0d4; }
+body.dark .btn-outline:hover { background: #2c2420; }
+body.dark .qr-item { background: #1a1512; border-color: #3b2f2f; }
+body.dark .qr-item.selected { border-color: #e8e0d4; background: #2c2420; }
+body.dark .qr-item .qr-id { color: #f0ebe3; }
+body.dark .qr-item .qr-name { color: #c4b5a4; }
+body.dark .qr-item .check { background: #1a1512; border-color: #e8e0d4; color: #e8e0d4; }
+body.dark .qr-item.selected .check { background: #e8e0d4; color: #1a1512; }
+body.dark input, body.dark select { background-color: #1a1512; color: #e0d6c8; border-color: #3b2f2f; }
+body.dark input:focus, body.dark select:focus { border-color: #e8e0d4; }
+body.dark .modal { background: #2c2420; }
+body.dark .modal h2 { color: #f0ebe3; border-bottom-color: #3b2f2f; }
+body.dark .modal-close { color: #6b5b4e; }
+body.dark .modal-close:hover { color: #e8e0d4; }
+body.dark .toolbar .count { color: #6b5b4e; }
+body.dark .empty { color: #6b5b4e; }
+
+/* Print sheet styles (only active in print window) */
+.print-only { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+    <h1>Drogo Slice</h1>
+    <nav>
+        <a href="/">Scan</a>
+        <a href="/manage">Manage</a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" id="themeBtn"></button>
+    </nav>
+</header>
+
+<div class="card">
+    <h2>QR Code Manager</h2>
+    <div class="toolbar">
+        <button class="btn-sm btn-outline" onclick="selectAll()">Select All</button>
+        <button class="btn-sm btn-outline" onclick="selectNone()">Clear</button>
+        <button class="btn-sm" onclick="printSelected()">Print Selected</button>
+        <span class="count" id="selCount">0 selected</span>
+    </div>
+    <div id="qrGrid" class="qr-grid">
+        <p class="empty">Loading...</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Generate Blank QR Codes</h2>
+    <p style="font-size:0.85rem;color:#8a7b6e;margin-bottom:12px;">
+        Print QR labels for IDs that don't have items yet. Stick them on products, then pair via Scan or Manage.
+    </p>
+    <div class="form-group">
+        <div class="row">
+            <input type="number" id="rangeFrom" placeholder="From ID" min="1" value="1">
+            <input type="number" id="rangeTo" placeholder="To ID" min="1" value="30">
+        </div>
+    </div>
+    <button onclick="printRange()">Print Blank Sheet</button>
+</div>
+
+<!-- Reassign modal -->
+<div class="modal-overlay" id="reassignModal" onclick="if(event.target===this)closeReassign()">
+    <div class="modal">
+        <button class="modal-close" onclick="closeReassign()"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg></button>
+        <h2 id="reassignTitle">Reassign QR Code</h2>
+        <div id="reassignContent"></div>
+    </div>
+</div>
+
+</div>
+
+<script>
+// --- Theme ---
+function toggleTheme() {
+    const dark = document.body.classList.toggle('dark');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    document.getElementById('themeBtn').textContent = dark ? '\u2600\uFE0F' : '\uD83C\uDF19';
+}
+
+(function initTheme() {
+    const saved = localStorage.getItem('theme');
+    const dark = saved === 'dark';
+    if (dark) document.body.classList.add('dark');
+    document.getElementById('themeBtn').textContent = dark ? '\u2600\uFE0F' : '\uD83C\uDF19';
+})();
+
+// --- State ---
+let items = [];
+let selected = new Set();
+
+window.addEventListener('DOMContentLoaded', loadItems);
+
+// --- QR Generation ---
+function makeQrDataUrl(value, size) {
+    const qr = qrcode(0, 'M');
+    qr.addData(String(value));
+    qr.make();
+    // Create image from the QR module data
+    const modules = qr.getModuleCount();
+    const cellSize = Math.floor(size / modules);
+    const canvas = document.createElement('canvas');
+    canvas.width = cellSize * modules;
+    canvas.height = cellSize * modules;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000';
+    for (let r = 0; r < modules; r++) {
+        for (let c = 0; c < modules; c++) {
+            if (qr.isDark(r, c)) {
+                ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+            }
+        }
+    }
+    return canvas.toDataURL('image/png');
+}
+
+// --- Load & Render ---
+async function loadItems() {
+    try {
+        const res = await fetch('/api/items');
+        items = await res.json();
+    } catch { items = []; }
+
+    const grid = document.getElementById('qrGrid');
+    if (items.length === 0) {
+        grid.innerHTML = '<p class="empty">No items yet. Create items on the Manage page first.</p>';
+        updateCount();
+        return;
+    }
+
+    // Sort by ID
+    items.sort((a, b) => a.id - b.id);
+
+    grid.innerHTML = items.map(item => {
+        const dataUrl = makeQrDataUrl(item.id, 120);
+        const sel = selected.has(item.id) ? ' selected' : '';
+        return `
+        <div class="qr-item${sel}" id="qi-${item.id}" onclick="toggleSelect(${item.id}, event)">
+            <div class="check" onclick="toggleSelect(${item.id}, event)">${selected.has(item.id) ? '✓' : ''}</div>
+            <img src="${dataUrl}" width="100" height="100" alt="QR ${item.id}">
+            <div class="qr-id">#${item.id}</div>
+            <div class="qr-name">${esc(item.name)}</div>
+            <div class="qr-actions">
+                <button class="btn-sm btn-outline" onclick="openReassign(${item.id}, '${esc(item.name).replace(/'/g, "\\'")}'); event.stopPropagation();">Reassign</button>
+            </div>
+        </div>`;
+    }).join('');
+
+    updateCount();
+}
+
+// --- Selection ---
+function toggleSelect(id, e) {
+    if (e) e.stopPropagation();
+    if (selected.has(id)) selected.delete(id);
+    else selected.add(id);
+
+    const el = document.getElementById('qi-' + id);
+    if (el) {
+        el.classList.toggle('selected', selected.has(id));
+        el.querySelector('.check').textContent = selected.has(id) ? '✓' : '';
+    }
+    updateCount();
+}
+
+function selectAll() {
+    items.forEach(i => selected.add(i.id));
+    items.forEach(i => {
+        const el = document.getElementById('qi-' + i.id);
+        if (el) { el.classList.add('selected'); el.querySelector('.check').textContent = '✓'; }
+    });
+    updateCount();
+}
+
+function selectNone() {
+    selected.clear();
+    items.forEach(i => {
+        const el = document.getElementById('qi-' + i.id);
+        if (el) { el.classList.remove('selected'); el.querySelector('.check').textContent = ''; }
+    });
+    updateCount();
+}
+
+function updateCount() {
+    document.getElementById('selCount').textContent = selected.size + ' selected';
+}
+
+// --- Reassign ---
+function openReassign(id, name) {
+    document.getElementById('reassignTitle').textContent = 'Reassign #' + id + ' — ' + name;
+    document.getElementById('reassignContent').innerHTML = `
+        <p style="font-size:0.85rem;color:#8a7b6e;margin-bottom:12px;">
+            Change this item's QR code number. The item keeps all its data — only the ID changes.
+        </p>
+        <div class="form-group">
+            <input type="number" id="newQrId" placeholder="New QR # (e.g. 15)" min="1">
+        </div>
+        <button onclick="doReassign(${id})">Reassign to New QR</button>`;
+    document.getElementById('reassignModal').classList.add('active');
+    setTimeout(() => document.getElementById('newQrId').focus(), 100);
+}
+
+function closeReassign() {
+    document.getElementById('reassignModal').classList.remove('active');
+}
+
+async function doReassign(oldId) {
+    const newId = parseInt(document.getElementById('newQrId').value);
+    if (isNaN(newId) || newId <= 0) { alert('Enter a valid ID'); return; }
+    if (newId === oldId) { alert('That is the same ID'); return; }
+    if (!confirm('Reassign #' + oldId + ' → #' + newId + '?')) return;
+
+    const res = await fetch('/api/items/' + oldId + '/reassign?new_id=' + newId, { method: 'POST' });
+    if (res.ok) {
+        // Update selection
+        if (selected.has(oldId)) {
+            selected.delete(oldId);
+            selected.add(newId);
+        }
+        closeReassign();
+        await loadItems();
+    } else {
+        const d = await res.json();
+        alert(d.detail || 'Failed to reassign');
+    }
+}
+
+// --- Print Selected Items ---
+function printSelected() {
+    const toPrint = items.filter(i => selected.has(i.id));
+    if (toPrint.length === 0) { alert('Select at least one item to print'); return; }
+    openPrintWindow(toPrint.map(i => ({ id: i.id, label: i.name })));
+}
+
+// --- Print Blank Range ---
+function printRange() {
+    const from = parseInt(document.getElementById('rangeFrom').value) || 1;
+    const to = parseInt(document.getElementById('rangeTo').value) || 30;
+    if (from > to) { alert('"From" must be less than or equal to "To"'); return; }
+    if (to - from > 99) { alert('Max 100 labels at a time'); return; }
+
+    const labels = [];
+    for (let i = from; i <= to; i++) {
+        const item = items.find(it => it.id === i);
+        labels.push({ id: i, label: item ? item.name : '' });
+    }
+    openPrintWindow(labels);
+}
+
+// --- Print Window ---
+function openPrintWindow(labels) {
+    // Generate QR data URLs for each label
+    const cards = labels.map(l => {
+        const dataUrl = makeQrDataUrl(l.id, 150);
+        const nameHtml = l.label
+            ? '<div class="label-name">' + esc(l.label) + '</div>'
+            : '<div class="write-line"></div>';
+        return `<div class="card">
+            <img src="${dataUrl}" width="120" height="120" alt="QR ${l.id}">
+            <div class="num">#${l.id}</div>
+            ${nameHtml}
+        </div>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>Drogo Slice - QR Labels</title>
+<style>
+  @media print { @page { margin: 0.4in; } body { padding: 0; } }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #fff; padding: 20px; }
+  h1 { text-align: center; color: #1a1a1a; margin-bottom: 4px; font-family: Georgia, serif; }
+  .sub { text-align: center; color: #666; margin-bottom: 20px; font-size: 0.95em; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; max-width: 900px; margin: 0 auto; }
+  .card { background: white; border: 2px solid #1a1a1a; border-radius: 10px; padding: 10px; text-align: center; break-inside: avoid; }
+  .card img { width: 120px; height: 120px; display: block; margin: 0 auto 6px; }
+  .num { font-weight: 800; font-size: 1.3em; color: #1a1a1a; }
+  .label-name { font-size: 0.85em; color: #444; margin-top: 4px; word-break: break-word; }
+  .write-line { border-bottom: 1px dashed #ccc; height: 22px; margin-top: 6px; }
+  .no-print { text-align: center; margin-bottom: 16px; }
+  .no-print button { font-size: 1rem; padding: 10px 32px; cursor: pointer; background: #3b2f2f; color: #fff; border: none; border-radius: 6px; font-family: inherit; }
+  @media print { .no-print { display: none; } }
+</style>
+</head><body>
+<h1>Drogo Slice - QR Labels</h1>
+<p class="sub">Scan = item lookup. Write the item name below each code after sticking it on.</p>
+<div class="no-print"><button onclick="window.print()">Print This Sheet</button></div>
+<div class="grid">${cards}</div>
+</body></html>`;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+}
+
+// --- Util ---
+function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+</script>
+</body>
+</html>

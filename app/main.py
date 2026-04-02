@@ -114,6 +114,14 @@ async def manage():
     return {"message": "Manage page not found"}
 
 
+@app.get("/qr")
+async def qr_manager():
+    qr_path = static_path / "qr.html"
+    if qr_path.exists():
+        return FileResponse(qr_path, media_type="text/html", headers={"Cache-Control": "no-cache"})
+    return {"message": "QR page not found"}
+
+
 # Serve other static files (CSS, JS, etc) from /static if they exist
 if static_path.exists():
     app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
