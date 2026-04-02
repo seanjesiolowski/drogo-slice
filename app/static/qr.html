@@ -158,6 +158,15 @@ input:focus, select:focus {
     font-size: 0.85rem;
 }
 
+.section-desc {
+    font-size: 0.85rem;
+    color: #8a7b6e;
+    margin-bottom: 12px;
+}
+
+details summary { padding: 6px 0; }
+details summary:hover { color: #3b2f2f; }
+
 /* QR item grid */
 .qr-grid {
     display: grid;
@@ -327,6 +336,9 @@ body.dark .modal-close { color: #6b5b4e; }
 body.dark .modal-close:hover { color: #e8e0d4; }
 body.dark .toolbar .count { color: #6b5b4e; }
 body.dark .empty { color: #6b5b4e; }
+body.dark .section-desc { color: #6b5b4e; }
+body.dark details summary { color: #c4b5a4; }
+body.dark details summary:hover { color: #e8e0d4; }
 
 /* Print sheet styles (only active in print window) */
 .print-only { display: none; }
@@ -345,7 +357,8 @@ body.dark .empty { color: #6b5b4e; }
 </header>
 
 <div class="card">
-    <h2>QR Code Manager</h2>
+    <h2>Assigned QR Codes</h2>
+    <p class="section-desc" id="assignedDesc">Loading...</p>
     <div class="toolbar">
         <button class="btn-sm btn-outline" onclick="selectAll()">Select All</button>
         <button class="btn-sm btn-outline" onclick="selectNone()">Clear</button>
@@ -358,17 +371,28 @@ body.dark .empty { color: #6b5b4e; }
 </div>
 
 <div class="card">
-    <h2>Generate Blank QR Codes</h2>
-    <p style="font-size:0.85rem;color:#8a7b6e;margin-bottom:12px;">
-        Print QR labels for IDs that don't have items yet. Stick them on products, then pair via Scan or Manage.
+    <h2>Print Advance Labels</h2>
+    <p class="section-desc">
+        Print QR labels in advance — stick them on products now, assign items later via Scan or Manage.
     </p>
     <div class="form-group">
+        <label style="font-size:0.85rem;font-weight:600;color:#5a4a3a;">How many labels?</label>
         <div class="row">
-            <input type="number" id="rangeFrom" placeholder="From ID" min="1" value="1">
-            <input type="number" id="rangeTo" placeholder="To ID" min="1" value="30">
+            <input type="number" id="labelCount" placeholder="e.g. 20" min="1" max="100" value="20">
+            <button class="btn-sm" onclick="printAdvance()" style="flex:none;width:auto;padding:10px 18px;">Print</button>
         </div>
+        <p style="font-size:0.8rem;color:#8a7b6e;margin-top:2px;" id="advanceHint">Starting from #...</p>
     </div>
-    <button onclick="printRange()">Print Blank Sheet</button>
+    <details style="margin-top:8px;">
+        <summary style="font-size:0.85rem;color:#5a4a3a;cursor:pointer;user-select:none;">Custom range</summary>
+        <div class="form-group" style="margin-top:10px;">
+            <div class="row">
+                <input type="number" id="rangeFrom" placeholder="From ID" min="1">
+                <input type="number" id="rangeTo" placeholder="To ID" min="1">
+            </div>
+        </div>
+        <button onclick="printRange()">Print Range</button>
+    </details>
 </div>
 
 <!-- Reassign modal -->
@@ -400,6 +424,7 @@ function toggleTheme() {
 // --- State ---
 let items = [];
 let selected = new Set();
+let nextAvailableId = 1;
 
 window.addEventListener('DOMContentLoaded', loadItems);
 
@@ -435,12 +460,29 @@ async function loadItems() {
         items = await res.json();
     } catch { items = []; }
 
+    // Compute next available ID (first gap or max+1)
+    const usedIds = new Set(items.map(i => i.id));
+    nextAvailableId = 1;
+    while (usedIds.has(nextAvailableId)) nextAvailableId++;
+    // For advance labels, start after max existing ID to keep things simple
+    const maxId = items.length > 0 ? Math.max(...items.map(i => i.id)) : 0;
+    const advanceStart = maxId + 1;
+    document.getElementById('advanceHint').textContent = items.length > 0
+        ? `Starting from #${advanceStart} (${items.length} item${items.length === 1 ? '' : 's'} in system)`
+        : 'No items yet — labels will start from #1';
+    document.getElementById('rangeFrom').value = advanceStart;
+    document.getElementById('rangeTo').value = advanceStart + 19;
+
     const grid = document.getElementById('qrGrid');
+    const desc = document.getElementById('assignedDesc');
     if (items.length === 0) {
-        grid.innerHTML = '<p class="empty">No items yet. Create items on the Manage page first.</p>';
+        grid.innerHTML = '<p class="empty">No items yet. Use Print Advance Labels below to print QR codes ahead of time.</p>';
+        desc.textContent = 'No items assigned yet.';
         updateCount();
         return;
     }
+
+    desc.textContent = items.length + ' item' + (items.length === 1 ? '' : 's') + ' with QR codes assigned. Select items to print their labels.';
 
     // Sort by ID
     items.sort((a, b) => a.id - b.id);
@@ -546,7 +588,20 @@ function printSelected() {
     openPrintWindow(toPrint.map(i => ({ id: i.id, label: i.name })));
 }
 
-// --- Print Blank Range ---
+// --- Print Advance Labels ---
+function printAdvance() {
+    const count = parseInt(document.getElementById('labelCount').value) || 20;
+    if (count < 1 || count > 100) { alert('Enter a number between 1 and 100'); return; }
+    const maxId = items.length > 0 ? Math.max(...items.map(i => i.id)) : 0;
+    const start = maxId + 1;
+    const labels = [];
+    for (let i = start; i < start + count; i++) {
+        labels.push({ id: i, label: '' });
+    }
+    openPrintWindow(labels);
+}
+
+// --- Print Custom Range ---
 function printRange() {
     const from = parseInt(document.getElementById('rangeFrom').value) || 1;
     const to = parseInt(document.getElementById('rangeTo').value) || 30;
