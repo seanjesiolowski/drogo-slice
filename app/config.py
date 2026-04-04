@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     @classmethod
     def fix_async_scheme(cls, v: str) -> str:
         # Railway injects postgresql:// but asyncpg requires postgresql+asyncpg://
-        if isinstance(v, str) and v.startswith("postgresql://"):
+        if v.startswith("postgresql://"):
             return v.replace("postgresql://", "postgresql+asyncpg://", 1)
         return v
 
