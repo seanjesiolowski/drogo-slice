@@ -1,21 +1,26 @@
 import base64
 import secrets
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
 
+from sqlalchemy import select
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.config import settings
 from app.database import Base, engine
 from app.dependencies import get_db
+from app.models.category import Category
+from app.models.item import Item
 from app.routers import categories, items, reports
 
 
@@ -81,6 +86,45 @@ app.include_router(reports.router)
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+
+@app.get("/api/backup")
+async def download_backup(db: AsyncSession = Depends(get_db)):
+    """Export all categories and items as a JSON backup file."""
+    cat_rows = await db.execute(select(Category).order_by(Category.id))
+    item_rows = await db.execute(
+        select(Item).options(selectinload(Item.category)).order_by(Item.id)
+    )
+
+    cats = [{"id": c.id, "name": c.name} for c in cat_rows.scalars().all()]
+    items_list = [
+        {
+            "id": i.id,
+            "name": i.name,
+            "unit": i.unit,
+            "current_quantity": i.current_quantity,
+            "par_level": i.par_level,
+            "category_id": i.category_id,
+            "category_name": i.category.name if i.category else None,
+            "created_at": i.created_at.isoformat(),
+            "updated_at": i.updated_at.isoformat(),
+        }
+        for i in item_rows.scalars().all()
+    ]
+
+    backup = {
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "categories": cats,
+        "items": items_list,
+    }
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return JSONResponse(
+        content=backup,
+        headers={
+            "Content-Disposition": f'attachment; filename="drogo-slice-backup-{timestamp}.json"'
+        },
+    )
 
 
 @app.post("/api/reset")

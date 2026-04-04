@@ -427,6 +427,12 @@ body.dark .modal-close:hover { color: #e8e0d4; }
 </div>
 </div>
 
+<div class="card">
+    <h2>Backup</h2>
+    <p style="font-size:0.85rem; color:#8a7b6e; margin-bottom:12px;">Download all categories and items as a JSON file.</p>
+    <button onclick="downloadBackup()">Download Backup</button>
+</div>
+
 <div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
     <div class="modal">
         <button class="modal-close" onclick="closeEditModal()"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg></button>
@@ -661,6 +667,25 @@ async function deleteItem(id) {
     const res = await fetch('/api/items/' + id, { method: 'DELETE' });
     if (res.ok) { closeEditModal(); loadItems(); }
     else { const d = await res.json(); alert(d.detail || 'Failed'); }
+}
+
+async function downloadBackup() {
+    try {
+        const res = await fetch('/api/backup');
+        if (!res.ok) { alert('Backup failed'); return; }
+        const blob = await res.blob();
+        const disposition = res.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename="(.+)"/);
+        const filename = match ? match[1] : 'drogo-slice-backup.json';
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    } catch { alert('Backup failed — check your connection'); }
 }
 
 function esc(s) {
