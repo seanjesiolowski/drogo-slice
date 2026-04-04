@@ -52,7 +52,9 @@ nav a {
     padding: 4px 12px;
 }
 
+nav a { transition: transform 0.1s ease, background 0.1s ease; -webkit-tap-highlight-color: transparent; }
 nav a:hover { background: #e8e0d4; }
+nav a:active { transform: scale(0.94); background: #ddd5c8; }
 
 .card {
     background: #faf7f2;
@@ -142,7 +144,8 @@ button {
 }
 
 button:hover { background: #4e3e3e; }
-button:active { transform: scale(0.98); }
+button:active { transform: scale(0.94); background: #2a1f1f; }
+button { transition: transform 0.1s ease, background 0.1s ease; -webkit-tap-highlight-color: transparent; }
 
 .btn-sm {
     width: auto;
@@ -158,6 +161,7 @@ button:active { transform: scale(0.98); }
 }
 
 .btn-outline:hover { background: #f0ebe3; }
+.btn-outline:active { background: #ddd5c8; transform: scale(0.94); }
 
 .btn-danger {
     background: #b5372a;
@@ -176,6 +180,7 @@ button:active { transform: scale(0.98); }
 }
 
 .btn-danger-sm:hover { background: #fdf0ee; }
+.btn-danger-sm:active { background: #f5d8d4; transform: scale(0.94); }
 
 /* Item & category rows */
 .entry {
@@ -223,7 +228,9 @@ button:active { transform: scale(0.98); }
     color: #3b2f2f;
 }
 
+.bump { transition: transform 0.1s ease, color 0.1s ease; -webkit-tap-highlight-color: transparent; }
 .bump:hover { color: #6b5b4e; }
+.bump:active { transform: scale(0.8); color: #b5372a; }
 
 .entry-controls .spacer {
     flex: 1;
@@ -267,7 +274,9 @@ button:active { transform: scale(0.98); }
     width: auto;
 }
 
+.theme-toggle { transition: transform 0.1s ease; -webkit-tap-highlight-color: transparent; }
 .theme-toggle:hover { background: #e8e0d4; opacity: 1; }
+.theme-toggle:active { transform: scale(0.88); }
 
 /* Dark mode */
 body.dark { background: #1a1512; color: #e0d6c8; }

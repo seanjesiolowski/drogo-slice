@@ -53,7 +53,9 @@ nav a {
     padding: 4px 12px;
 }
 
+nav a { transition: transform 0.1s ease, background 0.1s ease; -webkit-tap-highlight-color: transparent; }
 nav a:hover { background: #e8e0d4; }
+nav a:active { transform: scale(0.94); background: #ddd5c8; }
 
 .card {
     background: #faf7f2;
@@ -98,7 +100,8 @@ button {
 }
 
 button:hover { background: #4e3e3e; }
-button:active { transform: scale(0.98); }
+button:active { transform: scale(0.94); background: #2a1f1f; }
+button { transition: transform 0.1s ease, background 0.1s ease; -webkit-tap-highlight-color: transparent; }
 
 button.secondary {
     background: transparent;
@@ -107,6 +110,7 @@ button.secondary {
 }
 
 button.secondary:hover { background: #f0ebe3; }
+button.secondary:active { background: #ddd5c8; transform: scale(0.94); }
 
 #qr-reader {
     border: 1px solid #ddd5c8;
@@ -163,7 +167,9 @@ button.secondary:hover { background: #f0ebe3; }
     color: #3b2f2f;
 }
 
+.bump { transition: transform 0.1s ease, color 0.1s ease; -webkit-tap-highlight-color: transparent; }
 .bump:hover { color: #6b5b4e; }
+.bump:active { transform: scale(0.8); color: #b5372a; }
 
 input[type=number] {
     width: 72px;
@@ -206,7 +212,9 @@ input[type=number]:focus {
     align-items: center;
 }
 
+.theme-toggle { transition: transform 0.1s ease; -webkit-tap-highlight-color: transparent; }
 .theme-toggle:hover { background: #e8e0d4; opacity: 1; }
+.theme-toggle:active { transform: scale(0.88); }
 
 /* Dark mode */
 body.dark { background: #1a1512; color: #e0d6c8; }

@@ -53,7 +53,9 @@ nav a {
     padding: 4px 12px;
 }
 
+nav a { transition: transform 0.1s ease, background 0.1s ease; -webkit-tap-highlight-color: transparent; }
 nav a:hover { background: #e8e0d4; }
+nav a:active { transform: scale(0.94); background: #ddd5c8; }
 
 .card {
     background: #faf7f2;
@@ -91,7 +93,8 @@ button {
 }
 
 button:hover { background: #4e3e3e; }
-button:active { transform: scale(0.98); }
+button:active { transform: scale(0.94); background: #2a1f1f; }
+button { transition: transform 0.1s ease, background 0.1s ease; -webkit-tap-highlight-color: transparent; }
 
 .btn-sm {
     width: auto;
@@ -107,6 +110,7 @@ button:active { transform: scale(0.98); }
 }
 
 .btn-outline:hover { background: #f0ebe3; }
+.btn-outline:active { background: #ddd5c8; transform: scale(0.94); }
 
 input, select {
     width: 100%;
@@ -148,7 +152,9 @@ input:focus, select:focus {
     width: auto;
 }
 
+.theme-toggle { transition: transform 0.1s ease; -webkit-tap-highlight-color: transparent; }
 .theme-toggle:hover { background: #e8e0d4; opacity: 1; }
+.theme-toggle:active { transform: scale(0.88); }
 
 .empty {
     color: #a09585;
