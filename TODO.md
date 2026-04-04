@@ -12,7 +12,7 @@
 ## MVP Features
 
 - [x] QR CODE MANAGER with link, etc. -- get it working well
-- [ ] Animation, obvious button feedback
+- [x] Animation, obvious button feedback
 - [ ] System to **really** back up the data (?!!)
 - [ ] (be able to) change username and password
 
