@@ -7,16 +7,15 @@
 
 ## Bugs
 
-- [x] Still issues creating categories (Category with name *'whatever' already exists; *seems for anything)
-
 ## MVP Features
 
 - [x] QR CODE MANAGER with link, etc. -- get it working well
 - [x] Animation, obvious button feedback
-- [ ] System to **really** back up the data (?!!)
+- [x] System to back up the data
 - [ ] (be able to) change username and password
 
 ## Additional Features
 
+- [ ] Automated server-side backups
 - [ ] Bug tracking/reporting right in the web app
 - [ ] Monitoring: in stock room but no adjustment and other reviews (motion detection?)
