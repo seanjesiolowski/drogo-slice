@@ -480,8 +480,8 @@ async function onScan(text) {
         const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
 
         let cls = 'status-ok', lbl = 'OK';
-        if (ratio <= 0.25) { cls = 'status-critical'; lbl = 'CRITICAL'; }
-        else if (ratio <= 0.5) { cls = 'status-low'; lbl = 'LOW'; }
+        if (ratio <= 0.5) { cls = 'status-critical'; lbl = 'CRITICAL'; }
+        else if (ratio <= 0.99) { cls = 'status-low'; lbl = 'LOW'; }
 
         showItem(item, cls, lbl);
     } catch {
@@ -561,8 +561,8 @@ async function loadInventory() {
         list.innerHTML = items.map(it => {
             const ratio = it.par_level > 0 ? it.current_quantity / it.par_level : 1;
             let cls = 'status-ok', lbl = 'OK';
-            if (ratio <= 0.25) { cls = 'status-critical'; lbl = 'CRITICAL'; }
-            else if (ratio <= 0.5) { cls = 'status-low'; lbl = 'LOW'; }
+            if (ratio <= 0.5) { cls = 'status-critical'; lbl = 'CRITICAL'; }
+            else if (ratio <= 0.99) { cls = 'status-low'; lbl = 'LOW'; }
             return `<div class="inv-row">
                 <div class="inv-pm">
                     <button onclick="invBump(${it.id},1,${it.current_quantity})">+</button>

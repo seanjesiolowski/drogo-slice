@@ -16,7 +16,7 @@ async def seeded_data(client: AsyncClient):
     )
     cat2_id = cat2.json()["id"]
 
-    # Critical: 2 < 10 * 0.5 = 5
+    # Critical: 2 <= 10 * 0.5 = 5
     await client.post(
         "/api/items/",
         json={
@@ -28,7 +28,7 @@ async def seeded_data(client: AsyncClient):
         },
     )
 
-    # Low: 6 >= 10 * 0.5 but 6 < 10
+    # Low: 6 > 10 * 0.5 and 6 <= 10 * 0.99
     await client.post(
         "/api/items/",
         json={
@@ -52,7 +52,7 @@ async def seeded_data(client: AsyncClient):
         },
     )
 
-    # Critical: 1 < 8 * 0.5 = 4
+    # Critical: 1 <= 8 * 0.5 = 4
     await client.post(
         "/api/items/",
         json={

@@ -22,14 +22,14 @@ async def next_id(db: AsyncSession = Depends(get_db)):
 @router.get("/", response_model=list[ItemResponse])
 async def list_items(
     category_id: int | None = Query(None, description="Filter by category"),
-    low_stock: bool = Query(False, description="Only show items below par level"),
+    low_stock: bool = Query(False, description="Only show items at or below 99% of par level"),
     db: AsyncSession = Depends(get_db),
 ):
     """List inventory items with optional filtering.
 
     Args:
         category_id: Filter items by category ID (optional)
-        low_stock: If True, only return items below par level (optional)
+        low_stock: If True, only return items at or below 99% of par level (optional)
         db: Database session
 
     Returns:
@@ -40,7 +40,7 @@ async def list_items(
     if category_id is not None:
         query = query.where(Item.category_id == category_id)
     if low_stock:
-        query = query.where(Item.current_quantity < Item.par_level)
+        query = query.where(Item.current_quantity <= Item.par_level * 0.99)
 
     result = await db.execute(query)
     return result.scalars().all()

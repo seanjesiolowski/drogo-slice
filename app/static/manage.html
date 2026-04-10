@@ -536,8 +536,8 @@ async function loadItems() {
     list.innerHTML = items.map(item => {
         const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
         let cls = 'status-ok', lbl = 'OK';
-        if (ratio <= 0.25) { cls = 'status-critical'; lbl = 'CRITICAL'; }
-        else if (ratio <= 0.5) { cls = 'status-low'; lbl = 'LOW'; }
+        if (ratio <= 0.5) { cls = 'status-critical'; lbl = 'CRITICAL'; }
+        else if (ratio <= 0.99) { cls = 'status-low'; lbl = 'LOW'; }
 
         const catOpts = categories.map(c =>
             `<option value="${c.id}" ${c.id === item.category_id ? 'selected' : ''}>${esc(c.name)}</option>`
