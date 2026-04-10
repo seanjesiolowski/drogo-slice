@@ -76,6 +76,40 @@ nav a:active { transform: scale(0.94); background: #ddd5c8; }
     border-bottom: 1px solid #ddd5c8;
 }
 
+.card h2.toggle-heading {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+    transition: color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.card h2.toggle-heading:hover { color: #5a4a3a; }
+
+.toggle-chevron {
+    font-style: normal;
+    font-size: 0.75em;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.toggle-heading.open .toggle-chevron { transform: rotate(180deg); }
+
+.inv-collapsible {
+    display: none;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd5c8;
+}
+
+.inv-collapsible.open { display: block; }
+
 .btn-group {
     display: flex;
     gap: 8px;
@@ -224,6 +258,8 @@ body.dark nav a { color: #c4b5a4; background: #2c2420; border-color: #3b2f2f; }
 body.dark nav a:hover { background: #3b2f2f; }
 body.dark .card { background: #2c2420; border-color: #3b2f2f; }
 body.dark .card h2 { color: #f0ebe3; border-bottom-color: #3b2f2f; }
+body.dark .card h2.toggle-heading:hover { color: #c4b5a4; }
+body.dark .inv-collapsible { border-top-color: #3b2f2f; }
 body.dark button { background: #e8e0d4; color: #1a1512; }
 body.dark button:hover { background: #f0ebe3; }
 body.dark button.secondary { background: transparent; color: #e8e0d4; border-color: #e8e0d4; }
@@ -400,8 +436,12 @@ body.dark .modal-close:hover { color: #e8e0d4; }
 </div>
 
 <div class="card">
-    <h2>Inventory</h2>
-    <div id="inventoryList"></div>
+    <h2 class="toggle-heading" onclick="toggleInventory()" id="invHeading">
+        All Items <span class="toggle-chevron">&#9660;</span>
+    </h2>
+    <div class="inv-collapsible" id="invCollapsible">
+        <div id="inventoryList"></div>
+    </div>
 </div>
 
 <footer class="tagline">inventory at a glance</footer>
@@ -577,6 +617,13 @@ async function invBump(id, delta, current) {
         body: JSON.stringify({ current_quantity: Math.max(0, current + delta) })
     });
     loadInventory();
+}
+
+function toggleInventory() {
+    const heading = document.getElementById('invHeading');
+    const panel = document.getElementById('invCollapsible');
+    const open = panel.classList.toggle('open');
+    heading.classList.toggle('open', open);
 }
 
 loadInventory();
