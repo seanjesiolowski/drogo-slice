@@ -345,6 +345,67 @@ body.dark .status-low { color: #d4a017; }
 body.dark .status-critical { color: #e05545; }
 body.dark .empty { color: #6b5b4e; }
 
+/* Filter bar */
+.filter-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-pill {
+    background: transparent;
+    color: #8a7b6e;
+    border: 1px solid #c4b5a4;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-height: auto;
+    width: auto;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.1s ease;
+}
+
+.filter-pill:hover { background: #f0ebe3; border-color: #a09585; color: #5a4a3a; }
+.filter-pill:active { transform: scale(0.94); }
+.filter-pill.pill-active { background: #3b2f2f; color: #faf7f2; border-color: #3b2f2f; }
+.filter-pill.pill-active:hover { background: #4e3e3e; }
+.filter-pill.pill-low { background: #b8860b; color: #fff; border-color: #b8860b; }
+.filter-pill.pill-low:hover { background: #9a7009; }
+.filter-pill.pill-critical { background: #b5372a; color: #fff; border-color: #b5372a; }
+.filter-pill.pill-critical:hover { background: #963025; }
+
+.filter-select {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    padding: 5px 28px 5px 12px;
+    border: 1px solid #c4b5a4;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-family: inherit;
+    color: #5a4a3a;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a4a3a' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    cursor: pointer;
+}
+
+.filter-select:focus { outline: none; border-color: #3b2f2f; }
+
+body.dark .filter-pill { color: #6b5b4e; border-color: #4a3f35; }
+body.dark .filter-pill:hover { background: #2c2420; color: #c4b5a4; border-color: #6b5b4e; }
+body.dark .filter-pill.pill-active { background: #e8e0d4; color: #1a1512; border-color: #e8e0d4; }
+body.dark .filter-pill.pill-active:hover { background: #f0ebe3; }
+body.dark .filter-select { color: #c4b5a4; border-color: #4a3f35; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c4b5a4' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e"); }
+body.dark .filter-select:focus { border-color: #e8e0d4; }
+
 /* Modal overlay */
 .modal-overlay {
     display: none;
@@ -451,6 +512,14 @@ body.dark .modal-close:hover { color: #e8e0d4; }
         All Items <span class="toggle-chevron">&#9660;</span>
     </h2>
     <div class="sec-collapsible" id="p-items">
+        <div class="filter-bar">
+            <button class="filter-pill pill-active" id="fAll" onclick="setStockFilter('all')">All</button>
+            <button class="filter-pill" id="fLow" onclick="setStockFilter('low')">Low</button>
+            <button class="filter-pill" id="fCritical" onclick="setStockFilter('critical')">Critical</button>
+            <select class="filter-select" id="catFilter" onchange="setCatFilter()">
+                <option value="">All Categories</option>
+            </select>
+        </div>
         <div id="itemList"><p class="empty">Loading...</p></div>
     </div>
 </div>
@@ -576,16 +645,49 @@ async function deleteCategory(id) {
 
 // --- Items ---
 
+let allItems = [];
+let filterLow = false;
+let filterCritical = false;
+let filterCategory = '';
+
 async function loadItems() {
-    let items = [];
     try {
         const res = await fetch('/api/items');
-        items = await res.json();
-    } catch { items = []; }
+        allItems = await res.json();
+    } catch { allItems = []; }
+    populateCategoryFilter();
+    renderItems();
+}
 
+function populateCategoryFilter() {
+    const seen = new Map();
+    allItems.forEach(it => { if (it.category) seen.set(it.category.id, it.category.name); });
+    const sel = document.getElementById('catFilter');
+    sel.innerHTML = '<option value="">All Categories</option>' +
+        [...seen.entries()].map(([id, name]) => `<option value="${id}">${esc(name)}</option>`).join('');
+    sel.value = filterCategory;
+}
+
+function renderItems() {
     const list = document.getElementById('itemList');
+
+    let items = allItems;
+
+    if (filterCategory) {
+        items = items.filter(it => it.category && String(it.category.id) === filterCategory);
+    }
+
+    if (filterLow || filterCritical) {
+        items = items.filter(it => {
+            const ratio = it.par_level > 0 ? it.current_quantity / it.par_level : 1;
+            if (filterCritical && ratio <= 0.5) return true;
+            if (filterLow && ratio > 0.5 && ratio <= 0.99) return true;
+            return false;
+        });
+    }
+
     if (items.length === 0) {
-        list.innerHTML = '<p class="empty">No items yet</p>';
+        list.innerHTML = '<p class="empty">No items match</p>';
         return;
     }
 
@@ -594,10 +696,6 @@ async function loadItems() {
         let cls = 'status-ok', lbl = 'OK';
         if (ratio <= 0.5) { cls = 'status-critical'; lbl = 'CRITICAL'; }
         else if (ratio <= 0.99) { cls = 'status-low'; lbl = 'LOW'; }
-
-        const catOpts = categories.map(c =>
-            `<option value="${c.id}" ${c.id === item.category_id ? 'selected' : ''}>${esc(c.name)}</option>`
-        ).join('');
 
         return `
         <div class="entry" id="row-${item.id}">
@@ -615,6 +713,31 @@ async function loadItems() {
             </div>
         </div>`;
     }).join('');
+}
+
+function setStockFilter(type) {
+    if (type === 'all') {
+        filterLow = false;
+        filterCritical = false;
+    } else if (type === 'low') {
+        filterLow = !filterLow;
+    } else if (type === 'critical') {
+        filterCritical = !filterCritical;
+    }
+    updateFilterPills();
+    renderItems();
+}
+
+function setCatFilter() {
+    filterCategory = document.getElementById('catFilter').value;
+    renderItems();
+}
+
+function updateFilterPills() {
+    const noneActive = !filterLow && !filterCritical;
+    document.getElementById('fAll').className = 'filter-pill' + (noneActive ? ' pill-active' : '');
+    document.getElementById('fLow').className = 'filter-pill' + (filterLow ? ' pill-low' : '');
+    document.getElementById('fCritical').className = 'filter-pill' + (filterCritical ? ' pill-critical' : '');
 }
 
 async function createItem() {
