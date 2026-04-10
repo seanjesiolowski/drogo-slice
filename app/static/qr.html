@@ -75,6 +75,40 @@ nav a:active { transform: scale(0.94); background: #ddd5c8; }
     border-bottom: 1px solid #ddd5c8;
 }
 
+.card h2.toggle-heading {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+    transition: color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.card h2.toggle-heading:hover { color: #5a4a3a; }
+
+.toggle-chevron {
+    font-style: normal;
+    font-size: 0.75em;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.toggle-heading.open .toggle-chevron { transform: rotate(180deg); }
+
+.sec-collapsible {
+    display: none;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd5c8;
+}
+
+.sec-collapsible.open { display: block; }
+
 button {
     background: #3b2f2f;
     color: #faf7f2;
@@ -324,6 +358,8 @@ body.dark nav a { color: #c4b5a4; background: #2c2420; border-color: #3b2f2f; }
 body.dark nav a:hover { background: #3b2f2f; }
 body.dark .card { background: #2c2420; border-color: #3b2f2f; }
 body.dark .card h2 { color: #f0ebe3; border-bottom-color: #3b2f2f; }
+body.dark .card h2.toggle-heading:hover { color: #c4b5a4; }
+body.dark .sec-collapsible { border-top-color: #3b2f2f; }
 body.dark button { background: #e8e0d4; color: #1a1512; }
 body.dark button:hover { background: #f0ebe3; }
 body.dark .btn-outline { background: transparent; color: #e8e0d4; border-color: #e8e0d4; }
@@ -363,42 +399,50 @@ body.dark details summary:hover { color: #e8e0d4; }
 </header>
 
 <div class="card">
-    <h2>Assigned QR Codes</h2>
-    <p class="section-desc" id="assignedDesc">Loading...</p>
-    <div class="toolbar">
-        <button class="btn-sm btn-outline" onclick="selectAll()">Select All</button>
-        <button class="btn-sm btn-outline" onclick="selectNone()">Clear</button>
-        <button class="btn-sm" onclick="printSelected()">Print Selected</button>
-        <span class="count" id="selCount">0 selected</span>
-    </div>
-    <div id="qrGrid" class="qr-grid">
-        <p class="empty">Loading...</p>
+    <h2 class="toggle-heading" onclick="toggleSection('h-assigned','p-assigned')" id="h-assigned">
+        Assigned QR Codes <span class="toggle-chevron">&#9660;</span>
+    </h2>
+    <div class="sec-collapsible" id="p-assigned">
+        <p class="section-desc" id="assignedDesc">Loading...</p>
+        <div class="toolbar">
+            <button class="btn-sm btn-outline" onclick="selectAll()">Select All</button>
+            <button class="btn-sm btn-outline" onclick="selectNone()">Clear</button>
+            <button class="btn-sm" onclick="printSelected()">Print Selected</button>
+            <span class="count" id="selCount">0 selected</span>
+        </div>
+        <div id="qrGrid" class="qr-grid">
+            <p class="empty">Loading...</p>
+        </div>
     </div>
 </div>
 
 <div class="card">
-    <h2>Print Advance Labels</h2>
-    <p class="section-desc">
-        Print QR labels in advance — stick them on products now, assign items later via Scan or Manage.
-    </p>
-    <div class="form-group">
-        <label style="font-size:0.85rem;font-weight:600;color:#5a4a3a;">How many labels?</label>
-        <div class="row">
-            <input type="number" id="labelCount" placeholder="e.g. 20" min="1" max="100" value="20">
-            <button class="btn-sm" onclick="printAdvance()" style="flex:none;width:auto;padding:10px 18px;">Print</button>
-        </div>
-        <p style="font-size:0.8rem;color:#8a7b6e;margin-top:2px;" id="advanceHint">Starting from #...</p>
-    </div>
-    <details style="margin-top:8px;">
-        <summary style="font-size:0.85rem;color:#5a4a3a;cursor:pointer;user-select:none;">Custom range</summary>
-        <div class="form-group" style="margin-top:10px;">
+    <h2 class="toggle-heading" onclick="toggleSection('h-advance','p-advance')" id="h-advance">
+        Print Advance Labels <span class="toggle-chevron">&#9660;</span>
+    </h2>
+    <div class="sec-collapsible" id="p-advance">
+        <p class="section-desc">
+            Print QR labels in advance — stick them on products now, assign items later via Scan or Manage.
+        </p>
+        <div class="form-group">
+            <label style="font-size:0.85rem;font-weight:600;color:#5a4a3a;">How many labels?</label>
             <div class="row">
-                <input type="number" id="rangeFrom" placeholder="From ID" min="1">
-                <input type="number" id="rangeTo" placeholder="To ID" min="1">
+                <input type="number" id="labelCount" placeholder="e.g. 20" min="1" max="100" value="20">
+                <button class="btn-sm" onclick="printAdvance()" style="flex:none;width:auto;padding:10px 18px;">Print</button>
             </div>
+            <p style="font-size:0.8rem;color:#8a7b6e;margin-top:2px;" id="advanceHint">Starting from #...</p>
         </div>
-        <button onclick="printRange()">Print Range</button>
-    </details>
+        <details style="margin-top:8px;">
+            <summary style="font-size:0.85rem;color:#5a4a3a;cursor:pointer;user-select:none;">Custom range</summary>
+            <div class="form-group" style="margin-top:10px;">
+                <div class="row">
+                    <input type="number" id="rangeFrom" placeholder="From ID" min="1">
+                    <input type="number" id="rangeTo" placeholder="To ID" min="1">
+                </div>
+            </div>
+            <button onclick="printRange()">Print Range</button>
+        </details>
+    </div>
 </div>
 
 <!-- Reassign modal -->
@@ -669,6 +713,14 @@ function openPrintWindow(labels) {
     const win = window.open('', '_blank');
     win.document.write(html);
     win.document.close();
+}
+
+// --- Toggle sections ---
+function toggleSection(headingId, panelId) {
+    const heading = document.getElementById(headingId);
+    const panel = document.getElementById(panelId);
+    const open = panel.classList.toggle('open');
+    heading.classList.toggle('open', open);
 }
 
 // --- Util ---
