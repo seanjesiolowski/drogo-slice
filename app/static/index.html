@@ -293,14 +293,6 @@ body.dark .status-critical { color: #e05545; }
 
 body.dark .inv-row { border-bottom-color: #3b2f2f; }
 
-.demo-scan {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin-top: 12px;
-}
-.demo-scan input { width: 80px; }
-
 .tagline {
     text-align: center;
     font-size: 0.72rem;
@@ -397,10 +389,6 @@ body.dark .modal-close:hover { color: #e8e0d4; }
         <button id="stopBtn" class="secondary" onclick="stopScanner()" style="display:none;">Stop</button>
     </div>
     <div id="qr-reader"></div>
-    <div class="demo-scan">
-        <input type="number" id="demoId" placeholder="Item #" min="1">
-        <button class="secondary" onclick="onScan(document.getElementById('demoId').value)">Simulate Scan</button>
-    </div>
 </div>
 
 <div class="modal-overlay" id="scanModal" onclick="if(event.target===this)closeModal()">
