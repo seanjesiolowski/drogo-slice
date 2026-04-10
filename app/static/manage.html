@@ -93,6 +93,40 @@ nav a:active { transform: scale(0.94); background: #ddd5c8; }
     border-bottom: 1px solid #ddd5c8;
 }
 
+.card h2.toggle-heading {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+    transition: color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.card h2.toggle-heading:hover { color: #5a4a3a; }
+
+.toggle-chevron {
+    font-style: normal;
+    font-size: 0.75em;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.toggle-heading.open .toggle-chevron { transform: rotate(180deg); }
+
+.sec-collapsible {
+    display: none;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd5c8;
+}
+
+.sec-collapsible.open { display: block; }
+
 .form-group {
     display: flex;
     flex-direction: column;
@@ -287,6 +321,8 @@ body.dark nav a:hover { background: #3b2f2f; }
 body.dark .card { background: #2c2420; border-color: #3b2f2f; }
 body.dark .card-group .card:first-child { border-bottom-color: transparent; }
 body.dark .card h2 { color: #f0ebe3; border-bottom-color: #3b2f2f; }
+body.dark .card h2.toggle-heading:hover { color: #c4b5a4; }
+body.dark .sec-collapsible { border-top-color: #3b2f2f; }
 body.dark button { background: #e8e0d4; color: #1a1512; }
 body.dark button:hover { background: #f0ebe3; }
 body.dark .btn-outline { background: transparent; color: #e8e0d4; border-color: #e8e0d4; }
@@ -388,49 +424,69 @@ body.dark .modal-close:hover { color: #e8e0d4; }
 
 <div class="card-group">
 <div class="card">
-    <h2>Categories</h2>
-    <div id="catList"><p class="empty">Loading...</p></div>
+    <h2 class="toggle-heading" onclick="toggleSection('h-cats','p-cats')" id="h-cats">
+        Categories <span class="toggle-chevron">&#9660;</span>
+    </h2>
+    <div class="sec-collapsible" id="p-cats">
+        <div id="catList"><p class="empty">Loading...</p></div>
+    </div>
 </div>
 
 <div class="card">
-    <h2>Add Category</h2>
-    <div class="form-group">
-        <input type="text" id="cat-name" placeholder="Name">
+    <h2 class="toggle-heading" onclick="toggleSection('h-addcat','p-addcat')" id="h-addcat">
+        Add Category <span class="toggle-chevron">&#9660;</span>
+    </h2>
+    <div class="sec-collapsible" id="p-addcat">
+        <div class="form-group">
+            <input type="text" id="cat-name" placeholder="Name">
+        </div>
+        <button onclick="createCategory()">Create</button>
     </div>
-    <button onclick="createCategory()">Create</button>
 </div>
 </div>
 
 <div class="card-group">
 <div class="card">
-    <h2>All Items</h2>
-    <div id="itemList"><p class="empty">Loading...</p></div>
+    <h2 class="toggle-heading" onclick="toggleSection('h-items','p-items')" id="h-items">
+        All Items <span class="toggle-chevron">&#9660;</span>
+    </h2>
+    <div class="sec-collapsible" id="p-items">
+        <div id="itemList"><p class="empty">Loading...</p></div>
+    </div>
 </div>
 
 <div class="card">
-    <h2>Add Item</h2>
-    <div class="form-group">
-        <input type="number" id="item-id" placeholder="ID (blank = next)" min="1">
-        <input type="text" id="item-name" placeholder="Name">
-        <input type="text" id="item-unit" placeholder="Unit">
-    </div>
-    <div class="form-group">
-        <div class="row">
-            <input type="number" id="item-qty" placeholder="Actual qty" min="0">
-            <input type="number" id="item-par" placeholder="Par level" min="0">
+    <h2 class="toggle-heading" onclick="toggleSection('h-additem','p-additem')" id="h-additem">
+        Add Item <span class="toggle-chevron">&#9660;</span>
+    </h2>
+    <div class="sec-collapsible" id="p-additem">
+        <div class="form-group">
+            <input type="number" id="item-id" placeholder="ID (blank = next)" min="1">
+            <input type="text" id="item-name" placeholder="Name">
+            <input type="text" id="item-unit" placeholder="Unit">
         </div>
+        <div class="form-group">
+            <div class="row">
+                <input type="number" id="item-qty" placeholder="Actual qty" min="0">
+                <input type="number" id="item-par" placeholder="Par level" min="0">
+            </div>
+        </div>
+        <div class="form-group">
+            <select id="item-cat"></select>
+        </div>
+        <button onclick="createItem()">Create</button>
     </div>
-    <div class="form-group">
-        <select id="item-cat"></select>
-    </div>
-    <button onclick="createItem()">Create</button>
 </div>
 </div>
 
 <div class="card">
-    <h2>Backup</h2>
-    <p style="font-size:0.85rem; color:#8a7b6e; margin-bottom:12px;">Download all categories and items as a JSON file.</p>
-    <button onclick="downloadBackup()">Download Backup</button>
+    <h2 class="toggle-heading" onclick="toggleSection('h-backup','p-backup')" id="h-backup">
+        Backup <span class="toggle-chevron">&#9660;</span>
+    </h2>
+    <div class="sec-collapsible" id="p-backup">
+        <p style="font-size:0.85rem; color:#8a7b6e; margin-bottom:12px;">Download all categories and items as a JSON file.</p>
+        <button onclick="downloadBackup()">Download Backup</button>
+    </div>
 </div>
 
 <div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
@@ -686,6 +742,13 @@ async function downloadBackup() {
         a.remove();
         URL.revokeObjectURL(url);
     } catch { alert('Backup failed — check your connection'); }
+}
+
+function toggleSection(headingId, panelId) {
+    const heading = document.getElementById(headingId);
+    const panel = document.getElementById(panelId);
+    const open = panel.classList.toggle('open');
+    heading.classList.toggle('open', open);
 }
 
 function esc(s) {
