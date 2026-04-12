@@ -9,7 +9,8 @@
       "Bash(grep -c \"fetch\\\\|axios\\\\|XMLHttpRequest\" <path>/app/static/*.html)",
       "Bash(docker compose:*)",
       "Bash(python:*)",
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Bash(xargs grep:*)"
     ]
   }
 }
