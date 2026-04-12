@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from app.dependencies import get_db
 from app.models.item import Item
+from app.models.storage_class import StorageClass
 from app.schemas.item import ItemCreate, ItemResponse, ItemUpdate
 
 router = APIRouter(prefix="/api/items", tags=["items"])
@@ -35,12 +36,21 @@ async def list_items(
     Returns:
         list[ItemResponse]: List of items matching filters
     """
-    query = select(Item).options(selectinload(Item.category)).order_by(Item.name)
+    query = (
+        select(Item)
+        .options(selectinload(Item.category), selectinload(Item.storage_class))
+        .order_by(Item.name)
+    )
 
     if category_id is not None:
         query = query.where(Item.category_id == category_id)
     if low_stock:
-        query = query.where(Item.current_quantity <= Item.par_level * 0.99)
+        low_t = func.coalesce(StorageClass.low_threshold, 0.99)
+        query = (
+            query
+            .outerjoin(StorageClass, Item.storage_class_id == StorageClass.id)
+            .where(Item.current_quantity <= Item.par_level * low_t)
+        )
 
     result = await db.execute(query)
     return result.scalars().all()
@@ -101,7 +111,9 @@ async def get_item(item_id: int, db: AsyncSession = Depends(get_db)):
         HTTPException: 404 if item not found
     """
     result = await db.execute(
-        select(Item).options(selectinload(Item.category)).where(Item.id == item_id)
+        select(Item)
+        .options(selectinload(Item.category), selectinload(Item.storage_class))
+        .where(Item.id == item_id)
     )
     item = result.scalar_one_or_none()
     if item is None:
@@ -127,7 +139,9 @@ async def update_item(
         HTTPException: 404 if item not found, 400 if invalid category_id
     """
     result = await db.execute(
-        select(Item).options(selectinload(Item.category)).where(Item.id == item_id)
+        select(Item)
+        .options(selectinload(Item.category), selectinload(Item.storage_class))
+        .where(Item.id == item_id)
     )
     item = result.scalar_one_or_none()
     if item is None:
@@ -140,7 +154,7 @@ async def update_item(
     try:
         await db.commit()
         await db.refresh(item)
-        await db.refresh(item, attribute_names=["category"])
+        await db.refresh(item, attribute_names=["category", "storage_class"])
     except IntegrityError as e:
         await db.rollback()
         if "FOREIGN KEY" in str(e.orig):
@@ -181,7 +195,9 @@ async def reassign_item_id(
     await db.commit()
 
     result = await db.execute(
-        select(Item).options(selectinload(Item.category)).where(Item.id == new_id)
+        select(Item)
+        .options(selectinload(Item.category), selectinload(Item.storage_class))
+        .where(Item.id == new_id)
     )
     return result.scalar_one()
 

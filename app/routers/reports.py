@@ -1,33 +1,39 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy import case, select
+from sqlalchemy import Float, case, func, literal, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db
 from app.models.category import Category
 from app.models.item import Item
+from app.models.storage_class import StorageClass
 from app.schemas.item import LowStockItem
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
+_DEFAULT_LOW = 0.99
+_DEFAULT_CRITICAL = 0.5
+
 
 @router.get("/low-stock", response_model=list[LowStockItem])
 async def low_stock_report(db: AsyncSession = Depends(get_db)):
-    """Get items at or below 99% of par level with status categorization.
+    """Get items at or below their effective low threshold with status categorization.
+
+    Each item's thresholds come from its StorageClass when assigned,
+    otherwise falls back to project defaults (low=0.99, critical=0.5).
 
     Returns items needing restock, categorized by urgency:
-    - critical: current_quantity <= 50% of par_level
-    - low: current_quantity <= 99% of par_level (and > 50%)
-    - (items above 99% of par level are excluded)
-
-    Args:
-        db: Database session
+    - critical: current_quantity <= critical_threshold * par_level
+    - low: current_quantity <= low_threshold * par_level (and above critical)
 
     Returns:
         list[LowStockItem]: Items sorted by status (critical first) then name
     """
+    low_t = func.coalesce(StorageClass.low_threshold, literal(_DEFAULT_LOW, Float))
+    critical_t = func.coalesce(StorageClass.critical_threshold, literal(_DEFAULT_CRITICAL, Float))
+
     status_expr = case(
-        (Item.current_quantity <= Item.par_level * 0.5, "critical"),
-        (Item.current_quantity <= Item.par_level * 0.99, "low"),
+        (Item.current_quantity <= Item.par_level * critical_t, "critical"),
+        (Item.current_quantity <= Item.par_level * low_t, "low"),
         else_="ok",
     )
 
@@ -42,7 +48,8 @@ async def low_stock_report(db: AsyncSession = Depends(get_db)):
             status_expr.label("status"),
         )
         .join(Category, Item.category_id == Category.id)
-        .where(Item.current_quantity <= Item.par_level * 0.99)
+        .outerjoin(StorageClass, Item.storage_class_id == StorageClass.id)
+        .where(Item.current_quantity <= Item.par_level * low_t)
         .order_by(status_expr, Item.name)
     )
 
