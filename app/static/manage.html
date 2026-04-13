@@ -508,6 +508,35 @@ body.dark .modal-close:hover { color: #e8e0d4; }
 
 <div class="card-group">
 <div class="card">
+    <h2 class="toggle-heading" onclick="toggleSection('h-sc','p-sc')" id="h-sc">
+        Storage Classes <span class="toggle-chevron">&#9660;</span>
+    </h2>
+    <div class="sec-collapsible" id="p-sc">
+        <div id="scList"><p class="empty">Loading...</p></div>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="toggle-heading" onclick="toggleSection('h-addsc','p-addsc')" id="h-addsc">
+        Add Storage Class <span class="toggle-chevron">&#9660;</span>
+    </h2>
+    <div class="sec-collapsible" id="p-addsc">
+        <div class="form-group">
+            <input type="text" id="sc-name" placeholder="Name (e.g. Refrigerated)">
+        </div>
+        <div class="form-group">
+            <div class="row">
+                <input type="number" id="sc-low" placeholder="Low threshold" min="0" max="1" step="0.01" value="0.99">
+                <input type="number" id="sc-crit" placeholder="Critical threshold" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+        <button onclick="createStorageClass()">Create</button>
+    </div>
+</div>
+</div>
+
+<div class="card-group">
+<div class="card">
     <h2 class="toggle-heading" onclick="toggleSection('h-items','p-items')" id="h-items">
         All Items <span class="toggle-chevron">&#9660;</span>
     </h2>
@@ -542,6 +571,11 @@ body.dark .modal-close:hover { color: #e8e0d4; }
         </div>
         <div class="form-group">
             <select id="item-cat"></select>
+        </div>
+        <div class="form-group">
+            <select id="item-sc">
+                <option value="">No Storage Class</option>
+            </select>
         </div>
         <button onclick="createItem()">Create</button>
     </div>
@@ -583,9 +617,11 @@ function toggleTheme() {
 })();
 
 let categories = [];
+let storageClasses = [];
 
 window.addEventListener('DOMContentLoaded', () => {
     loadCategories();
+    loadStorageClasses();
     loadItems();
 });
 
@@ -643,6 +679,100 @@ async function deleteCategory(id) {
     else { const d = await res.json(); alert(d.detail || 'Failed'); }
 }
 
+// --- Storage Classes ---
+
+async function loadStorageClasses() {
+    try {
+        const res = await fetch('/api/storage-classes/');
+        storageClasses = await res.json();
+    } catch { storageClasses = []; }
+
+    const list = document.getElementById('scList');
+    if (storageClasses.length === 0) {
+        list.innerHTML = '<p class="empty">No storage classes yet</p>';
+    } else {
+        list.innerHTML = storageClasses.map(sc => `
+            <div class="entry">
+                <div class="entry-name">${esc(sc.name)}</div>
+                <div class="entry-meta">
+                    Low: ${Math.round(sc.low_threshold * 100)}% &middot; Critical: ${Math.round(sc.critical_threshold * 100)}%
+                </div>
+                <div class="entry-controls">
+                    <span class="spacer"></span>
+                    <button class="btn-sm btn-outline" onclick="openEditScModal(${sc.id}, '${esc(sc.name).replace(/'/g, "\\'")}', ${sc.low_threshold}, ${sc.critical_threshold})">Edit</button>
+                    <button class="btn-danger-sm" onclick="deleteStorageClass(${sc.id})">Delete</button>
+                </div>
+            </div>`).join('');
+    }
+
+    // Populate storage class dropdowns
+    const scOpts = '<option value="">No Storage Class</option>' +
+        storageClasses.map(sc => `<option value="${sc.id}">${esc(sc.name)}</option>`).join('');
+    document.getElementById('item-sc').innerHTML = scOpts;
+}
+
+async function createStorageClass() {
+    const name = document.getElementById('sc-name').value.trim();
+    if (!name) { alert('Name required'); return; }
+
+    const res = await fetch('/api/storage-classes/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name,
+            low_threshold: parseFloat(document.getElementById('sc-low').value) || 0.99,
+            critical_threshold: parseFloat(document.getElementById('sc-crit').value) || 0.5
+        })
+    });
+
+    if (res.ok) {
+        document.getElementById('sc-name').value = '';
+        document.getElementById('sc-low').value = '0.99';
+        document.getElementById('sc-crit').value = '0.5';
+        await loadStorageClasses();
+    } else {
+        const d = await res.json();
+        alert(d.detail || 'Failed');
+    }
+}
+
+function openEditScModal(id, name, low, crit) {
+    document.getElementById('editModalTitle').textContent = 'Edit Storage Class — ' + name;
+    document.getElementById('editModalContent').innerHTML = `
+        <div class="form-group">
+            <input type="text" id="esn-${id}" value="${name}" placeholder="Name">
+        </div>
+        <div class="form-group">
+            <div class="row">
+                <input type="number" id="esl-${id}" value="${low}" placeholder="Low threshold" min="0" max="1" step="0.01">
+                <input type="number" id="esc-${id}" value="${crit}" placeholder="Critical threshold" min="0" max="1" step="0.01">
+            </div>
+        </div>
+        <button onclick="saveStorageClass(${id})">Save</button>`;
+    document.getElementById('editModal').classList.add('active');
+}
+
+async function saveStorageClass(id) {
+    const res = await fetch('/api/storage-classes/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name: document.getElementById('esn-' + id).value.trim(),
+            low_threshold: parseFloat(document.getElementById('esl-' + id).value),
+            critical_threshold: parseFloat(document.getElementById('esc-' + id).value)
+        })
+    });
+    if (res.ok) { closeEditModal(); loadStorageClasses(); loadItems(); }
+    else { const d = await res.json(); alert(d.detail || 'Failed'); }
+}
+
+async function deleteStorageClass(id) {
+    if (!confirm('Delete this storage class?')) return;
+    const res = await fetch('/api/storage-classes/' + id, { method: 'DELETE' });
+    if (res.ok) { await loadStorageClasses(); loadItems(); }
+    else { const d = await res.json(); alert(d.detail || 'Failed'); }
+}
+
 // --- Items ---
 
 let allItems = [];
@@ -668,6 +798,15 @@ function populateCategoryFilter() {
     sel.value = filterCategory;
 }
 
+function getItemStatus(item) {
+    const low = item.storage_class ? item.storage_class.low_threshold : 0.99;
+    const crit = item.storage_class ? item.storage_class.critical_threshold : 0.5;
+    const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
+    if (ratio <= crit) return { cls: 'status-critical', lbl: 'CRITICAL', status: 'critical' };
+    if (ratio <= low) return { cls: 'status-low', lbl: 'LOW', status: 'low' };
+    return { cls: 'status-ok', lbl: 'OK', status: 'ok' };
+}
+
 function renderItems() {
     const list = document.getElementById('itemList');
 
@@ -679,9 +818,9 @@ function renderItems() {
 
     if (filterLow || filterCritical) {
         items = items.filter(it => {
-            const ratio = it.par_level > 0 ? it.current_quantity / it.par_level : 1;
-            if (filterCritical && ratio <= 0.5) return true;
-            if (filterLow && ratio > 0.5 && ratio <= 0.99) return true;
+            const s = getItemStatus(it);
+            if (filterCritical && s.status === 'critical') return true;
+            if (filterLow && s.status === 'low') return true;
             return false;
         });
     }
@@ -692,10 +831,7 @@ function renderItems() {
     }
 
     list.innerHTML = items.map(item => {
-        const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
-        let cls = 'status-ok', lbl = 'OK';
-        if (ratio <= 0.5) { cls = 'status-critical'; lbl = 'CRITICAL'; }
-        else if (ratio <= 0.99) { cls = 'status-low'; lbl = 'LOW'; }
+        const { cls, lbl } = getItemStatus(item);
 
         return `
         <div class="entry" id="row-${item.id}">
@@ -703,13 +839,14 @@ function renderItems() {
             <div class="entry-meta">
                 <strong>${item.current_quantity}</strong>/${item.par_level} ${esc(item.unit)}
                 &middot; ${item.category ? esc(item.category.name) : 'N/A'}
+                ${item.storage_class ? '&middot; ' + esc(item.storage_class.name) : ''}
                 &middot; <span class="${cls}">${lbl}</span>
             </div>
             <div class="entry-controls">
                 <span class="bump" onclick="bumpQty(${item.id},-1,${item.current_quantity})">-</span>
                 <span class="bump" onclick="bumpQty(${item.id},1,${item.current_quantity})">+</span>
                 <span class="spacer"></span>
-                <button class="btn-sm btn-outline" onclick="openEditModal(${item.id}, '${esc(item.name).replace(/'/g, "\\'")}', '${esc(item.unit).replace(/'/g, "\\'")}', ${item.current_quantity}, ${item.par_level}, ${item.category_id})">Edit</button>
+                <button class="btn-sm btn-outline" onclick="openEditModal(${item.id}, '${esc(item.name).replace(/'/g, "\\'")}', '${esc(item.unit).replace(/'/g, "\\'")}', ${item.current_quantity}, ${item.par_level}, ${item.category_id}, ${item.storage_class_id || 'null'})">Edit</button>
             </div>
         </div>`;
     }).join('');
@@ -742,13 +879,15 @@ function updateFilterPills() {
 
 async function createItem() {
     const idVal = document.getElementById('item-id').value;
+    const scVal = document.getElementById('item-sc').value;
     const payload = {
         id: idVal ? parseInt(idVal) : undefined,
         name: document.getElementById('item-name').value.trim(),
         unit: document.getElementById('item-unit').value.trim(),
         current_quantity: parseFloat(document.getElementById('item-qty').value),
         par_level: parseFloat(document.getElementById('item-par').value),
-        category_id: parseInt(document.getElementById('item-cat').value)
+        category_id: parseInt(document.getElementById('item-cat').value),
+        storage_class_id: scVal ? parseInt(scVal) : null
     };
     if (!payload.name) { alert('Name required'); return; }
 
@@ -769,10 +908,14 @@ async function createItem() {
     }
 }
 
-function openEditModal(id, name, unit, qty, par, catId) {
+function openEditModal(id, name, unit, qty, par, catId, scId) {
     const catOpts = categories.map(c =>
         `<option value="${c.id}" ${c.id === catId ? 'selected' : ''}>${esc(c.name)}</option>`
     ).join('');
+    const scOpts = '<option value="">No Storage Class</option>' +
+        storageClasses.map(sc =>
+            `<option value="${sc.id}" ${sc.id === scId ? 'selected' : ''}>${esc(sc.name)}</option>`
+        ).join('');
 
     document.getElementById('editModalTitle').textContent = 'Edit #' + id + ' — ' + name;
     document.getElementById('editModalContent').innerHTML = `
@@ -788,6 +931,9 @@ function openEditModal(id, name, unit, qty, par, catId) {
         </div>
         <div class="form-group">
             <select id="ec-${id}">${catOpts}</select>
+        </div>
+        <div class="form-group">
+            <select id="esc-${id}">${scOpts}</select>
         </div>
         <div class="form-group">
             <div class="row">
@@ -816,6 +962,7 @@ async function bumpQty(id, delta, current) {
 }
 
 async function saveEdits(id) {
+    const scVal = document.getElementById('esc-' + id).value;
     const res = await fetch('/api/items/' + id, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -824,7 +971,8 @@ async function saveEdits(id) {
             unit: document.getElementById('eu-' + id).value.trim(),
             current_quantity: parseFloat(document.getElementById('eq-' + id).value),
             par_level: parseFloat(document.getElementById('ep-' + id).value),
-            category_id: parseInt(document.getElementById('ec-' + id).value)
+            category_id: parseInt(document.getElementById('ec-' + id).value),
+            storage_class_id: scVal ? parseInt(scVal) : null
         })
     });
     if (res.ok) { closeEditModal(); loadItems(); }

@@ -75,7 +75,7 @@ async def create_item(payload: ItemCreate, db: AsyncSession = Depends(get_db)):
     db.add(item)
     try:
         await db.commit()
-        await db.refresh(item, attribute_names=["category"])
+        await db.refresh(item, attribute_names=["category", "storage_class"])
     except IntegrityError as e:
         await db.rollback()
         err = str(e.orig)

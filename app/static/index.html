@@ -562,6 +562,15 @@ function resetUI() {
     document.getElementById('stopBtn').style.display = 'none';
 }
 
+function getItemStatus(item) {
+    const low = item.storage_class ? item.storage_class.low_threshold : 0.99;
+    const crit = item.storage_class ? item.storage_class.critical_threshold : 0.5;
+    const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
+    if (ratio <= crit) return { cls: 'status-critical', lbl: 'CRITICAL', status: 'critical' };
+    if (ratio <= low) return { cls: 'status-low', lbl: 'LOW', status: 'low' };
+    return { cls: 'status-ok', lbl: 'OK', status: 'ok' };
+}
+
 async function onScan(text) {
     stopScanner();
     const id = parseInt(text);
@@ -572,11 +581,7 @@ async function onScan(text) {
         if (!res.ok) { showError('Item #' + id + ' not found'); return; }
 
         const item = await res.json();
-        const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
-
-        let cls = 'status-ok', lbl = 'OK';
-        if (ratio <= 0.5) { cls = 'status-critical'; lbl = 'CRITICAL'; }
-        else if (ratio <= 0.99) { cls = 'status-low'; lbl = 'LOW'; }
+        const { cls, lbl } = getItemStatus(item);
 
         showItem(item, cls, lbl);
     } catch {
@@ -681,9 +686,9 @@ function renderInventory() {
 
     if (filterLow || filterCritical) {
         items = items.filter(it => {
-            const ratio = it.par_level > 0 ? it.current_quantity / it.par_level : 1;
-            if (filterCritical && ratio <= 0.5) return true;
-            if (filterLow && ratio > 0.5 && ratio <= 0.99) return true;
+            const s = getItemStatus(it);
+            if (filterCritical && s.status === 'critical') return true;
+            if (filterLow && s.status === 'low') return true;
             return false;
         });
     }
@@ -694,10 +699,7 @@ function renderInventory() {
     }
 
     list.innerHTML = items.map(it => {
-        const ratio = it.par_level > 0 ? it.current_quantity / it.par_level : 1;
-        let cls = 'status-ok', lbl = 'OK';
-        if (ratio <= 0.5) { cls = 'status-critical'; lbl = 'CRITICAL'; }
-        else if (ratio <= 0.99) { cls = 'status-low'; lbl = 'LOW'; }
+        const { cls, lbl } = getItemStatus(it);
         return `<div class="inv-row">
             <div class="inv-pm">
                 <button onclick="invBump(${it.id},1,${it.current_quantity})">+</button>
