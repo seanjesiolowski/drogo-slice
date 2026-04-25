@@ -1,6 +1,6 @@
 # Drogo Slice
 
-Shop inventory tracker built with FastAPI and PostgreSQL.
+Coffee shop inventory tracker built with FastAPI and PostgreSQL.
 
 ## Running locally (Docker installed and running)
 
