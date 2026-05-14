@@ -7,6 +7,11 @@ class Settings(BaseSettings):
     admin_username: str = "admin"
     admin_password: str = "changeme"
 
+    brevo_api_key: str = ""
+    digest_from_email: str = ""
+    digest_from_name: str = "Drogo Slice"
+    digest_to_emails: str = ""
+
     model_config = {"env_file": ".env"}
 
     @field_validator("database_url", mode="before")
