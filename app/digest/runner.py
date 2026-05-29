@@ -72,11 +72,16 @@ async def _fetch_totals(db: AsyncSession) -> dict[str, int]:
     return totals
 
 
+async def build_digest_html(db: AsyncSession, today: date) -> str:
+    """Render the digest HTML from an existing DB session. Sends nothing."""
+    items = await _fetch_attention_items(db)
+    totals = await _fetch_totals(db)
+    return render_digest(week_of=today, items=items, totals=totals)
+
+
 async def _build_digest(today: date) -> str:
     async with async_session() as db:
-        items = await _fetch_attention_items(db)
-        totals = await _fetch_totals(db)
-    return render_digest(week_of=today, items=items, totals=totals)
+        return await build_digest_html(db, today)
 
 
 async def _run(dry_run: bool) -> None:

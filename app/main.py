@@ -21,7 +21,7 @@ from app.database import Base, engine
 from app.dependencies import get_db
 from app.models.category import Category
 from app.models.item import Item
-from app.routers import categories, items, reports, storage_classes
+from app.routers import categories, digest, items, reports, storage_classes
 
 
 @asynccontextmanager
@@ -82,6 +82,7 @@ app.include_router(items.router)
 app.include_router(categories.router)
 app.include_router(reports.router)
 app.include_router(storage_classes.router)
+app.include_router(digest.router)
 
 
 @app.get("/health")
