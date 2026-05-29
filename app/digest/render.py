@@ -7,6 +7,7 @@ _TEMPLATE = """\
     <h1 style="font-size: 22px; margin: 0 0 4px 0;">Drogo Slice — Weekly Digest</h1>
     <p style="color: #666; margin: 0 0 24px 0;">{week_of}</p>
 
+    <h2 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; margin: 0 0 8px 0;">Inventory totals (all items)</h2>
     <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
       <tr>
         <td style="padding: 12px; background: #fef2f2; border-radius: 6px;">
@@ -26,7 +27,7 @@ _TEMPLATE = """\
       </tr>
     </table>
 
-    <h2 style="font-size: 16px; margin: 0 0 8px 0;">Needs attention</h2>
+    <h2 style="font-size: 16px; margin: 0 0 8px 0;">Needs attention (critical &amp; low)</h2>
     <table style="width: 100%; border-collapse: collapse;">
       <thead>
         <tr style="text-align: left; border-bottom: 1px solid #e5e7eb;">
