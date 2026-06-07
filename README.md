@@ -2,6 +2,9 @@
 
 Coffee shop inventory tracker built with FastAPI and PostgreSQL.
 
+![alt text](image.png)
+
+
 ## Running locally (Docker installed and running)
 
 ```bash
