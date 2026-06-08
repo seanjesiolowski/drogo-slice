@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,9 +9,14 @@ from sqlalchemy.orm import selectinload
 from app.dependencies import get_db
 from app.models.item import Item
 from app.models.storage_class import StorageClass
-from app.schemas.item import ItemCreate, ItemResponse, ItemUpdate
+from app.schemas.item import BIGINT_MAX, ItemCreate, ItemResponse, ItemUpdate
 
 router = APIRouter(prefix="/api/items", tags=["items"])
+
+# Path param for item ids. Bounded to the PostgreSQL BIGINT range so a value
+# that can't fit the id column (e.g. a mis-scanned barcode) returns 422 here
+# instead of overflowing in the DB driver and 500ing.
+ItemId = Annotated[int, Path(ge=1, le=BIGINT_MAX)]
 
 
 @router.get("/next-id")
@@ -97,7 +104,7 @@ async def create_item(payload: ItemCreate, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{item_id}", response_model=ItemResponse)
-async def get_item(item_id: int, db: AsyncSession = Depends(get_db)):
+async def get_item(item_id: ItemId, db: AsyncSession = Depends(get_db)):
     """Get a specific inventory item by ID.
 
     Args:
@@ -123,7 +130,7 @@ async def get_item(item_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.patch("/{item_id}", response_model=ItemResponse)
 async def update_item(
-    item_id: int, payload: ItemUpdate, db: AsyncSession = Depends(get_db)
+    item_id: ItemId, payload: ItemUpdate, db: AsyncSession = Depends(get_db)
 ):
     """Partially update an inventory item.
 
@@ -171,8 +178,8 @@ async def update_item(
 
 @router.post("/{item_id}/reassign", response_model=ItemResponse)
 async def reassign_item_id(
-    item_id: int,
-    new_id: int = Query(..., description="New ID to assign"),
+    item_id: ItemId,
+    new_id: int = Query(..., ge=1, le=BIGINT_MAX, description="New ID to assign"),
     db: AsyncSession = Depends(get_db),
 ):
     """Change an item's primary key (QR label number)."""
@@ -203,7 +210,7 @@ async def reassign_item_id(
 
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_item(item_id: ItemId, db: AsyncSession = Depends(get_db)):
     """Delete an inventory item.
 
     Args:

@@ -36,6 +36,24 @@ async def test_get_item_not_found(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_get_item_large_id_not_found(client: AsyncClient):
+    """A large QR-label/barcode-sized id (beyond int32) is a valid lookup.
+
+    It must resolve to a normal 404, not a 500 from an integer overflow.
+    """
+    response = await client.get("/api/items/850032825016")
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_item_id_out_of_range(client: AsyncClient):
+    """An id past the BIGINT range is rejected at validation as 422, not 500."""
+    too_big = 9_223_372_036_854_775_807 + 1
+    response = await client.get(f"/api/items/{too_big}")
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_update_item(client: AsyncClient, category_id: int):
     create = await client.post(
         "/api/items/",

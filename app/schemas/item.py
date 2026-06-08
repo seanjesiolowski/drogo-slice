@@ -1,13 +1,18 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.category import CategoryResponse
 from app.schemas.storage_class import StorageClassResponse
 
+# Largest value the items.id BIGINT column can hold. Item ids are QR label
+# numbers supplied by clients, so cap them here to reject out-of-range values
+# (e.g. mis-scanned barcodes) before they overflow the DB driver.
+BIGINT_MAX = 9_223_372_036_854_775_807
+
 
 class ItemCreate(BaseModel):
-    id: int | None = None
+    id: int | None = Field(default=None, ge=1, le=BIGINT_MAX)
     name: str
     unit: str
     current_quantity: float = 0.0

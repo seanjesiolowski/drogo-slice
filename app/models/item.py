@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Float, ForeignKey, Index, Integer, String, func
+from sqlalchemy import BigInteger, Float, ForeignKey, Index, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -21,7 +21,13 @@ class Item(Base):
         Index("ix_items_storage_class_id", "storage_class_id"),
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # BigInteger: ids are QR label numbers, which can be large (e.g. scanned
+    # 12-digit barcodes) and overflow a 32-bit INTEGER. See migration 004.
+    # Variant keeps plain INTEGER on SQLite so its rowid autoincrement (used by
+    # the test suite) still works; Postgres gets the 64-bit BIGINT.
+    id: Mapped[int] = mapped_column(
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True
+    )
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     unit: Mapped[str] = mapped_column(String(50), nullable=False)
     current_quantity: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
