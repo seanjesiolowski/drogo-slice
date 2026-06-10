@@ -344,3 +344,121 @@ async def test_list_items_filter_multiple_results(client: AsyncClient, category_
     assert items[0]["name"] == "Apple Milk"
     assert items[1]["name"] == "Banana Beans"
     assert items[2]["name"] == "Zebra Milk"
+
+
+@pytest.mark.asyncio
+async def test_create_item_duplicate_name_in_category_returns_409(
+    client: AsyncClient, category_id: int
+):
+    """Two items with the same name in the same category should be rejected."""
+    payload = {
+        "name": "Oat Milk",
+        "unit": "cartons",
+        "current_quantity": 5.0,
+        "par_level": 10.0,
+        "category_id": category_id,
+    }
+    first = await client.post("/api/items/", json=payload)
+    assert first.status_code == 201
+
+    second = await client.post("/api/items/", json=payload)
+    assert second.status_code == 409
+    assert "Oat Milk" in second.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_create_item_same_name_different_category_allowed(client: AsyncClient):
+    """The same item name is allowed across different categories."""
+    cat_a = await client.post("/api/categories/", json={"name": "Front Bar"})
+    cat_b = await client.post("/api/categories/", json={"name": "Back Bar"})
+
+    resp_a = await client.post(
+        "/api/items/",
+        json={"name": "Oat Milk", "unit": "cartons", "current_quantity": 5.0, "par_level": 10.0, "category_id": cat_a.json()["id"]},
+    )
+    resp_b = await client.post(
+        "/api/items/",
+        json={"name": "Oat Milk", "unit": "cartons", "current_quantity": 5.0, "par_level": 10.0, "category_id": cat_b.json()["id"]},
+    )
+    assert resp_a.status_code == 201
+    assert resp_b.status_code == 201
+
+
+@pytest.mark.asyncio
+async def test_create_item_invalid_category_id(client: AsyncClient):
+    """Creating an item with a non-existent category_id returns 400."""
+    response = await client.post(
+        "/api/items/",
+        json={
+            "name": "Ghost Item",
+            "unit": "units",
+            "current_quantity": 1.0,
+            "par_level": 5.0,
+            "category_id": 99999,
+        },
+    )
+    assert response.status_code == 400
+    assert "99999" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_update_item_invalid_category_id(client: AsyncClient, category_id: int):
+    """Patching an item with a non-existent category_id returns 400."""
+    create = await client.post(
+        "/api/items/",
+        json={
+            "name": "Oat Milk",
+            "unit": "cartons",
+            "current_quantity": 5.0,
+            "par_level": 10.0,
+            "category_id": category_id,
+        },
+    )
+    item_id = create.json()["id"]
+
+    response = await client.patch(f"/api/items/{item_id}", json={"category_id": 99999})
+    assert response.status_code == 400
+    assert "Category ID" in response.json()["detail"] or "does not exist" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_list_items_low_stock_uses_storage_class_thresholds(
+    client: AsyncClient, category_id: int
+):
+    """Items with a storage class use its low_threshold instead of the default 0.99."""
+    sc = await client.post(
+        "/api/storage-classes/",
+        json={"name": "Tight Shelf", "low_threshold": 0.5, "critical_threshold": 0.2},
+    )
+    sc_id = sc.json()["id"]
+
+    # With SC (low_threshold=0.5): 6 <= 10*0.5=5? No → not low stock
+    await client.post(
+        "/api/items/",
+        json={
+            "name": "Item With SC",
+            "unit": "units",
+            "current_quantity": 6.0,
+            "par_level": 10.0,
+            "category_id": category_id,
+            "storage_class_id": sc_id,
+        },
+    )
+
+    # Without SC (default low_threshold=0.99): 6 <= 10*0.99=9.9? Yes → low stock
+    await client.post(
+        "/api/items/",
+        json={
+            "name": "Item Without SC",
+            "unit": "units",
+            "current_quantity": 6.0,
+            "par_level": 10.0,
+            "category_id": category_id,
+        },
+    )
+
+    response = await client.get("/api/items/", params={"low_stock": True})
+    assert response.status_code == 200
+    names = [i["name"] for i in response.json()]
+    assert "Item Without SC" in names
+    assert "Item With SC" not in names

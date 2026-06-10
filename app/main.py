@@ -134,8 +134,10 @@ async def reset_database(db: AsyncSession = Depends(get_db)):
     """Wipe all items and categories, reset ID sequences to 1."""
     await db.execute(text("DELETE FROM items"))
     await db.execute(text("DELETE FROM categories"))
-    await db.execute(text("ALTER SEQUENCE items_id_seq RESTART WITH 1"))
-    await db.execute(text("ALTER SEQUENCE categories_id_seq RESTART WITH 1"))
+    conn = await db.connection()
+    if conn.dialect.name == "postgresql":
+        await db.execute(text("ALTER SEQUENCE items_id_seq RESTART WITH 1"))
+        await db.execute(text("ALTER SEQUENCE categories_id_seq RESTART WITH 1"))
     await db.commit()
     return {"status": "reset", "message": "All data wiped, IDs restart at 1"}
 

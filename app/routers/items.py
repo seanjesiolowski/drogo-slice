@@ -91,11 +91,13 @@ async def create_item(payload: ItemCreate, db: AsyncSession = Depends(get_db)):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Category ID {payload.category_id} does not exist",
             )
-        if "PRIMARY" in err or "UNIQUE" in err:
+        # Primary key collision (explicit id supplied by caller)
+        if "PRIMARY" in err or ("UNIQUE" in err and "items.id" in err):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Item with ID {payload.id} already exists",
             )
+        # Name+category unique constraint (uq_items_name_category)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Item with name '{payload.name}' already exists in this category",

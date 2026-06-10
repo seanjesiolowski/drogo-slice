@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, Float, ForeignKey, Index, Integer, String, func
+from sqlalchemy import BigInteger, Float, ForeignKey, Index, Integer, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -19,6 +19,7 @@ class Item(Base):
         Index("ix_items_category_id", "category_id"),
         Index("ix_items_name", "name"),
         Index("ix_items_storage_class_id", "storage_class_id"),
+        UniqueConstraint("name", "category_id", name="uq_items_name_category"),
     )
 
     # BigInteger: ids are QR label numbers, which can be large (e.g. scanned

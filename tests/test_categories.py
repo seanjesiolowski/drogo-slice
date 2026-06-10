@@ -90,7 +90,8 @@ async def test_delete_category_with_items_returns_409(client: AsyncClient):
     await client.post("/api/items/", json={
         "name": "Whole Milk",
         "category_id": category_id,
-        "quantity": 5,
+        "current_quantity": 5.0,
+        "par_level": 10.0,
         "unit": "gal",
     })
 
