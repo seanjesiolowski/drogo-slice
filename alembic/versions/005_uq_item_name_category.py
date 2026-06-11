@@ -4,7 +4,7 @@ Prevents duplicate item names within the same category. The router
 already returns 409 on IntegrityError for this case; the constraint
 makes it actually enforceable at the database level.
 
-Revision ID: 005_unique_item_name_per_category
+Revision ID: 005_uq_item_name_category
 Revises: 004_item_id_bigint
 Create Date: 2026-06-10 00:00:00.000000
 
@@ -13,7 +13,7 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = '005_unique_item_name_per_category'
+revision = '005_uq_item_name_category'
 down_revision = '004_item_id_bigint'
 branch_labels = None
 depends_on = None
