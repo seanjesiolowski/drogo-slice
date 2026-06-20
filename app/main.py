@@ -19,6 +19,7 @@ from sqlalchemy.orm import selectinload
 from app.config import settings
 from app.database import Base, engine
 from app.dependencies import get_db
+from app.observability import init_sentry
 from app.models.category import Category
 from app.models.item import Item
 from app.routers import categories, digest, items, reports, storage_classes
@@ -31,6 +32,8 @@ async def lifespan(app: FastAPI):
     yield
     await engine.dispose()
 
+
+init_sentry(settings)
 
 app = FastAPI(
     title="Drogo Slice",

@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     digest_from_name: str = "Drogo Slice"
     digest_to_emails: str = ""
 
+    sentry_dsn: str = ""
+    sentry_environment: str = "production"
+    sentry_traces_sample_rate: float = 0.0
+
     model_config = {"env_file": ".env"}
 
     @field_validator("database_url", mode="before")
