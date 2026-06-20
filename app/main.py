@@ -86,8 +86,15 @@ app.include_router(digest.router)
 
 
 @app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
+async def health_check(db: AsyncSession = Depends(get_db)):
+    try:
+        await db.execute(text("SELECT 1"))
+    except Exception:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unhealthy", "database": "error"},
+        )
+    return {"status": "healthy", "database": "ok"}
 
 
 @app.get("/api/backup")
