@@ -2,6 +2,8 @@
 
 Coffee shop inventory tracker built with FastAPI and PostgreSQL.
 
+***Currently in production***
+
 ![alt text](image.png)
 
 
@@ -23,20 +25,6 @@ The Docker setup supports **hot-reloading** — edit code in VS Code and changes
 4. Only rebuild (`docker compose up --build`) when you change `requirements.txt`
 
 For subsequent sessions, just run `docker compose up` (no `--build` needed).
-
-## Environment variables
-
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string (asyncpg) |
-| `ADMIN_USERNAME` | Basic auth username |
-| `ADMIN_PASSWORD` | Basic auth password |
-
-See `.env.example` for defaults.
-
-## Security
-
-All endpoints (except `/health`) require HTTP Basic Auth. Credentials are set via `ADMIN_USERNAME` and `ADMIN_PASSWORD` environment variables.
 
 ## Testing
 
