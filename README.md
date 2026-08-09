@@ -2,7 +2,7 @@
 
 Coffee shop inventory tracker built with FastAPI and PostgreSQL.
 
-***Currently in production at [Saint Drogo's](https://saintdrogoscoffee.com) in Lowville, NY***
+***Currently in production ( internal tooling ) at [Saint Drogo's](https://saintdrogoscoffee.com) in Lowville, NY***
 
 ![alt text](image.png)
 
