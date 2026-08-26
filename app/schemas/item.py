@@ -3,7 +3,6 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.category import CategoryResponse
-from app.schemas.storage_class import StorageClassResponse
 
 # Largest value the items.id BIGINT column can hold. Item ids are QR label
 # numbers supplied by clients, so cap them here to reject out-of-range values
@@ -18,7 +17,6 @@ class ItemCreate(BaseModel):
     current_quantity: float = 0.0
     par_level: float = 0.0
     category_id: int
-    storage_class_id: int | None = None
 
 
 class ItemUpdate(BaseModel):
@@ -27,7 +25,6 @@ class ItemUpdate(BaseModel):
     current_quantity: float | None = None
     par_level: float | None = None
     category_id: int | None = None
-    storage_class_id: int | None = None
 
 
 class ItemResponse(BaseModel):
@@ -40,8 +37,6 @@ class ItemResponse(BaseModel):
     par_level: float
     category_id: int
     category: CategoryResponse
-    storage_class_id: int | None
-    storage_class: StorageClassResponse | None
     created_at: datetime
     updated_at: datetime
 

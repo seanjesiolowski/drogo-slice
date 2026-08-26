@@ -563,8 +563,8 @@ function resetUI() {
 }
 
 function getItemStatus(item) {
-    const low = item.storage_class ? item.storage_class.low_threshold : 0.99;
-    const crit = item.storage_class ? item.storage_class.critical_threshold : 0.5;
+    const low = 0.99;
+    const crit = 0.5;
     const ratio = item.par_level > 0 ? item.current_quantity / item.par_level : 1;
     if (ratio <= crit) return { cls: 'status-critical', lbl: 'CRITICAL', status: 'critical' };
     if (ratio <= low) return { cls: 'status-low', lbl: 'LOW', status: 'low' };

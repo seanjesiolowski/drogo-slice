@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy import Float, case, func, literal, select
+from sqlalchemy import case, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db
 from app.models.category import Category
 from app.models.item import Item
-from app.models.storage_class import StorageClass
 from app.schemas.item import LowStockItem
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
@@ -16,10 +15,7 @@ _DEFAULT_CRITICAL = 0.5
 
 @router.get("/low-stock", response_model=list[LowStockItem])
 async def low_stock_report(db: AsyncSession = Depends(get_db)):
-    """Get items at or below their effective low threshold with status categorization.
-
-    Each item's thresholds come from its StorageClass when assigned,
-    otherwise falls back to project defaults (low=0.99, critical=0.5).
+    """Get items at or below their low threshold with status categorization.
 
     Returns items needing restock, categorized by urgency:
     - critical: current_quantity <= critical_threshold * par_level
@@ -28,12 +24,9 @@ async def low_stock_report(db: AsyncSession = Depends(get_db)):
     Returns:
         list[LowStockItem]: Items sorted by status (critical first) then name
     """
-    low_t = func.coalesce(StorageClass.low_threshold, literal(_DEFAULT_LOW, Float))
-    critical_t = func.coalesce(StorageClass.critical_threshold, literal(_DEFAULT_CRITICAL, Float))
-
     status_expr = case(
-        (Item.current_quantity <= Item.par_level * critical_t, "critical"),
-        (Item.current_quantity <= Item.par_level * low_t, "low"),
+        (Item.current_quantity <= Item.par_level * _DEFAULT_CRITICAL, "critical"),
+        (Item.current_quantity <= Item.par_level * _DEFAULT_LOW, "low"),
         else_="ok",
     )
 
@@ -48,8 +41,7 @@ async def low_stock_report(db: AsyncSession = Depends(get_db)):
             status_expr.label("status"),
         )
         .join(Category, Item.category_id == Category.id)
-        .outerjoin(StorageClass, Item.storage_class_id == StorageClass.id)
-        .where(Item.current_quantity <= Item.par_level * low_t)
+        .where(Item.current_quantity <= Item.par_level * _DEFAULT_LOW)
         .order_by(status_expr, Item.name)
     )
 

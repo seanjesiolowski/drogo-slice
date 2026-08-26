@@ -8,7 +8,6 @@ from sqlalchemy.orm import selectinload
 
 from app.dependencies import get_db
 from app.models.item import Item
-from app.models.storage_class import StorageClass
 from app.schemas.item import BIGINT_MAX, ItemCreate, ItemResponse, ItemUpdate
 
 router = APIRouter(prefix="/api/items", tags=["items"])
@@ -45,19 +44,14 @@ async def list_items(
     """
     query = (
         select(Item)
-        .options(selectinload(Item.category), selectinload(Item.storage_class))
+        .options(selectinload(Item.category))
         .order_by(Item.name)
     )
 
     if category_id is not None:
         query = query.where(Item.category_id == category_id)
     if low_stock:
-        low_t = func.coalesce(StorageClass.low_threshold, 0.99)
-        query = (
-            query
-            .outerjoin(StorageClass, Item.storage_class_id == StorageClass.id)
-            .where(Item.current_quantity <= Item.par_level * low_t)
-        )
+        query = query.where(Item.current_quantity <= Item.par_level * 0.99)
 
     result = await db.execute(query)
     return result.scalars().all()
@@ -82,7 +76,7 @@ async def create_item(payload: ItemCreate, db: AsyncSession = Depends(get_db)):
     db.add(item)
     try:
         await db.commit()
-        await db.refresh(item, attribute_names=["category", "storage_class"])
+        await db.refresh(item, attribute_names=["category"])
     except IntegrityError as e:
         await db.rollback()
         err = str(e.orig)
@@ -121,7 +115,7 @@ async def get_item(item_id: ItemId, db: AsyncSession = Depends(get_db)):
     """
     result = await db.execute(
         select(Item)
-        .options(selectinload(Item.category), selectinload(Item.storage_class))
+        .options(selectinload(Item.category))
         .where(Item.id == item_id)
     )
     item = result.scalar_one_or_none()
@@ -149,7 +143,7 @@ async def update_item(
     """
     result = await db.execute(
         select(Item)
-        .options(selectinload(Item.category), selectinload(Item.storage_class))
+        .options(selectinload(Item.category))
         .where(Item.id == item_id)
     )
     item = result.scalar_one_or_none()
@@ -163,7 +157,7 @@ async def update_item(
     try:
         await db.commit()
         await db.refresh(item)
-        await db.refresh(item, attribute_names=["category", "storage_class"])
+        await db.refresh(item, attribute_names=["category"])
     except IntegrityError as e:
         await db.rollback()
         if "FOREIGN KEY" in str(e.orig):
@@ -205,7 +199,7 @@ async def reassign_item_id(
 
     result = await db.execute(
         select(Item)
-        .options(selectinload(Item.category), selectinload(Item.storage_class))
+        .options(selectinload(Item.category))
         .where(Item.id == new_id)
     )
     return result.scalar_one()

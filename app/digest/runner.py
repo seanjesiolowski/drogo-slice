@@ -2,7 +2,7 @@ import argparse
 import asyncio
 from datetime import date
 
-from sqlalchemy import Float, case, func, literal, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -11,18 +11,15 @@ from app.digest.brevo import send_email
 from app.digest.render import render_digest
 from app.models.category import Category
 from app.models.item import Item
-from app.models.storage_class import StorageClass
 
 _DEFAULT_LOW = 0.99
 _DEFAULT_CRITICAL = 0.5
 
 
 def _status_expr():
-    low_t = func.coalesce(StorageClass.low_threshold, literal(_DEFAULT_LOW, Float))
-    critical_t = func.coalesce(StorageClass.critical_threshold, literal(_DEFAULT_CRITICAL, Float))
     return case(
-        (Item.current_quantity <= Item.par_level * critical_t, "critical"),
-        (Item.current_quantity <= Item.par_level * low_t, "low"),
+        (Item.current_quantity <= Item.par_level * _DEFAULT_CRITICAL, "critical"),
+        (Item.current_quantity <= Item.par_level * _DEFAULT_LOW, "low"),
         else_="ok",
     )
 
@@ -39,7 +36,6 @@ async def _fetch_attention_items(db: AsyncSession) -> list[dict]:
             status.label("status"),
         )
         .join(Category, Item.category_id == Category.id)
-        .outerjoin(StorageClass, Item.storage_class_id == StorageClass.id)
         .where(status.in_(["critical", "low"]))
         .order_by(status, Item.name)
     )
@@ -62,7 +58,6 @@ async def _fetch_totals(db: AsyncSession) -> dict[str, int]:
     query = (
         select(status.label("status"), func.count().label("n"))
         .select_from(Item)
-        .outerjoin(StorageClass, Item.storage_class_id == StorageClass.id)
         .group_by(status)
     )
     result = await db.execute(query)
