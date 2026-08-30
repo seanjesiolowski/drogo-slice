@@ -91,7 +91,7 @@ async def test_reset_wipes_all_data(client: AsyncClient):
     assert len((await client.get("/api/items/")).json()) == 1
     assert len((await client.get("/api/categories/")).json()) == 1
 
-    response = await client.post("/api/reset")
+    response = await client.post("/api/reset", params={"confirm": "RESET"})
     assert response.status_code == 200
 
     assert (await client.get("/api/items/")).json() == []
@@ -101,7 +101,7 @@ async def test_reset_wipes_all_data(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_reset_returns_success_payload(client: AsyncClient):
     """Reset returns a JSON body confirming the operation."""
-    response = await client.post("/api/reset")
+    response = await client.post("/api/reset", params={"confirm": "RESET"})
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "reset"
@@ -111,7 +111,24 @@ async def test_reset_returns_success_payload(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_reset_empty_db_is_idempotent(client: AsyncClient):
     """Resetting an already-empty database succeeds without error."""
-    response = await client.post("/api/reset")
+    response = await client.post("/api/reset", params={"confirm": "RESET"})
     assert response.status_code == 200
-    response = await client.post("/api/reset")
+    response = await client.post("/api/reset", params={"confirm": "RESET"})
     assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_reset_without_confirmation_is_rejected(client: AsyncClient):
+    """Reset without the confirm=RESET query param does not wipe data."""
+    cat = await client.post("/api/categories/", json={"name": "Milk"})
+    cat_id = cat.json()["id"]
+    await client.post(
+        "/api/items/",
+        json={"name": "Oat Milk", "unit": "cartons", "current_quantity": 5.0, "par_level": 10.0, "category_id": cat_id},
+    )
+
+    response = await client.post("/api/reset")
+    assert response.status_code == 400
+
+    assert len((await client.get("/api/items/")).json()) == 1
+    assert len((await client.get("/api/categories/")).json()) == 1

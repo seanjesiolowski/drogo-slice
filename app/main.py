@@ -139,8 +139,19 @@ async def download_backup(db: AsyncSession = Depends(get_db)):
 
 
 @app.post("/api/reset")
-async def reset_database(db: AsyncSession = Depends(get_db)):
-    """Wipe all items and categories, reset ID sequences to 1."""
+async def reset_database(confirm: str = "", db: AsyncSession = Depends(get_db)):
+    """Wipe all items and categories, reset ID sequences to 1.
+
+    Requires ?confirm=RESET to guard against an accidental or leaked-credential call.
+    """
+    if confirm != "RESET":
+        return JSONResponse(
+            status_code=400,
+            content={
+                "status": "confirmation_required",
+                "message": "Pass ?confirm=RESET to wipe all data.",
+            },
+        )
     await db.execute(text("DELETE FROM items"))
     await db.execute(text("DELETE FROM categories"))
     conn = await db.connection()
