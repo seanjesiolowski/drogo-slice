@@ -71,9 +71,15 @@ def main() -> int:
             migrate(account)
         except Exception as exc:
             if account.name == PRIMARY:
-                print(f"[bootstrap] primary database failed: {exc}", file=sys.stderr)
+                print(
+                    f"[bootstrap] primary database failed: {type(exc).__name__}: {exc}",
+                    file=sys.stderr,
+                )
                 return 1
-            print(f"[bootstrap] {account.name} failed, continuing without it: {exc}", file=sys.stderr)
+            print(
+                f"[bootstrap] {account.name} failed, continuing without it: {type(exc).__name__}: {exc}",
+                file=sys.stderr,
+            )
     return 0
 
 
