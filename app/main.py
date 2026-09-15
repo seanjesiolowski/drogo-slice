@@ -16,7 +16,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.accounts import PRIMARY, SECONDARY, configured_accounts
+from app.accounts import PRIMARY, configured_accounts
 from app.config import settings
 from app.database import Base, engine
 from app.dependencies import get_db
@@ -44,28 +44,29 @@ app = FastAPI(
 )
 
 
+def _unauthorized_response() -> Response:
+    return Response(
+        "Unauthorized",
+        status_code=401,
+        headers={"WWW-Authenticate": 'Basic realm="Drogo Slice"'},
+    )
+
+
 class BasicAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         if request.url.path == "/health":
+            request.state.account = PRIMARY
             return await call_next(request)
 
         auth = request.headers.get("Authorization", "")
         if not auth.startswith("Basic "):
-            return Response(
-                "Unauthorized",
-                status_code=401,
-                headers={"WWW-Authenticate": 'Basic realm="Drogo Slice"'},
-            )
+            return _unauthorized_response()
 
         try:
             decoded = base64.b64decode(auth[6:]).decode("utf-8")
             username, password = decoded.split(":", 1)
         except Exception:
-            return Response(
-                "Unauthorized",
-                status_code=401,
-                headers={"WWW-Authenticate": 'Basic realm="Drogo Slice"'},
-            )
+            return _unauthorized_response()
 
         matched = None
         for account in configured_accounts():
@@ -76,11 +77,7 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
                 break
 
         if matched is None:
-            return Response(
-                "Unauthorized",
-                status_code=401,
-                headers={"WWW-Authenticate": 'Basic realm="Drogo Slice"'},
-            )
+            return _unauthorized_response()
 
         request.state.account = matched.name
         return await call_next(request)

@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
+from app.dependencies import get_db
 from app.main import app
 
 
@@ -195,3 +196,25 @@ async def test_empty_credentials_rejected(unauthenticated_client: AsyncClient):
         "/api/categories/", headers={"Authorization": f"Basic {blank}"}
     )
     assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_health_endpoint_sets_account_for_real_get_db():
+    """/health must set request.state.account so the real get_db doesn't raise.
+
+    tests/conftest.py overrides get_db globally for every other test, which
+    hides a regression where the /health branch calls through without ever
+    setting request.state.account: the real get_db then raises RuntimeError,
+    which FastAPI turns into an unhandled 500. This test removes the override
+    for the duration of the request so it exercises the real get_db, and
+    restores the override afterwards so other tests are unaffected.
+    """
+    original = app.dependency_overrides.pop(get_db, None)
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            response = await ac.get("/health")
+        assert response.status_code != 500
+    finally:
+        if original is not None:
+            app.dependency_overrides[get_db] = original
