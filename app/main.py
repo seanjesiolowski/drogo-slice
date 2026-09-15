@@ -13,6 +13,7 @@ from starlette.responses import Response
 
 from sqlalchemy import select
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -84,6 +85,30 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
 
 
 app.add_middleware(BasicAuthMiddleware)
+
+
+@app.exception_handler(OperationalError)
+@app.exception_handler(OSError)
+async def database_unavailable(request: Request, exc: Exception) -> JSONResponse:
+    """A database that cannot be reached is a 503, not an opaque 500.
+
+    SQLAlchemy wraps some connection failures (an auth rejection, for
+    example) in OperationalError, but a DNS lookup failure raises
+    socket.gaierror and a refused port raises ConnectionRefusedError --
+    both OSError subclasses that never touch OperationalError. Both
+    handlers are registered on the same function so either path lands
+    here. Deliberately not a bare Exception handler: that would turn
+    every genuine bug into a silent 503.
+
+    Never include exc's message or the database URL in the response --
+    the URL carries the account's password.
+    """
+    account = getattr(request.state, "account", "unknown")
+    return JSONResponse(
+        status_code=503,
+        content={"detail": f"Database for account '{account}' is unavailable"},
+    )
+
 
 app.include_router(items.router)
 app.include_router(categories.router)
