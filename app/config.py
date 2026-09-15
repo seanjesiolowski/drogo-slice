@@ -7,6 +7,10 @@ class Settings(BaseSettings):
     admin_username: str = "admin"
     admin_password: str = "changeme"
 
+    secondary_database_url: str = ""
+    secondary_admin_username: str = ""
+    secondary_admin_password: str = ""
+
     brevo_api_key: str = ""
     digest_from_email: str = ""
     digest_from_name: str = "Drogo Slice"
@@ -18,7 +22,7 @@ class Settings(BaseSettings):
 
     model_config = {"env_file": ".env"}
 
-    @field_validator("database_url", mode="before")
+    @field_validator("database_url", "secondary_database_url", mode="before")
     @classmethod
     def fix_async_scheme(cls, v: str) -> str:
         # Railway injects postgresql:// but asyncpg requires postgresql+asyncpg://
