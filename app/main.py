@@ -16,6 +16,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.accounts import PRIMARY, SECONDARY, configured_accounts
 from app.config import settings
 from app.database import Base, engine
 from app.dependencies import get_db
@@ -66,16 +67,22 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
                 headers={"WWW-Authenticate": 'Basic realm="Drogo Slice"'},
             )
 
-        valid = secrets.compare_digest(username, settings.admin_username) and secrets.compare_digest(
-            password, settings.admin_password
-        )
-        if not valid:
+        matched = None
+        for account in configured_accounts():
+            if secrets.compare_digest(username, account.username) and secrets.compare_digest(
+                password, account.password
+            ):
+                matched = account
+                break
+
+        if matched is None:
             return Response(
                 "Unauthorized",
                 status_code=401,
                 headers={"WWW-Authenticate": 'Basic realm="Drogo Slice"'},
             )
 
+        request.state.account = matched.name
         return await call_next(request)
 
 
