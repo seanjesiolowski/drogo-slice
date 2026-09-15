@@ -1,3 +1,4 @@
+import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event
@@ -27,6 +28,21 @@ async def override_get_db():
 
 
 app.dependency_overrides[get_db] = override_get_db
+
+
+@pytest.fixture(autouse=True)
+def _clear_secondary_sessionmakers():
+    """Stop one test's secondary database config leaking into the next via the cache."""
+    from app.accounts import PRIMARY
+    from app.database import _sessionmakers
+
+    def _drop_non_primary():
+        for name in [n for n in _sessionmakers if n != PRIMARY]:
+            del _sessionmakers[name]
+
+    _drop_non_primary()
+    yield
+    _drop_non_primary()
 
 
 @pytest_asyncio.fixture(autouse=True)
