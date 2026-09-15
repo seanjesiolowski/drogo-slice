@@ -3,7 +3,9 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
 
+from app.accounts import PRIMARY
 from app.config import settings
 from app.dependencies import get_db
 from app.digest.brevo import send_email
@@ -20,8 +22,14 @@ async def preview_digest(db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/send")
-async def send_digest(db: AsyncSession = Depends(get_db)):
+async def send_digest(request: Request, db: AsyncSession = Depends(get_db)):
     """Render and actually send the digest via Brevo to DIGEST_TO_EMAILS."""
+    if getattr(request.state, "account", None) != PRIMARY:
+        raise HTTPException(
+            status_code=403,
+            detail="Digest sending is available only to the primary account",
+        )
+
     today = date.today()
     html = await build_digest_html(db, today)
 

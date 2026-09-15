@@ -77,3 +77,39 @@ async def test_send_returns_400_when_unconfigured(client: AsyncClient):
     response = await client.post("/admin/digest/send")
     assert response.status_code == 400
     assert "Missing config" in response.json()["detail"]
+
+
+@pytest_asyncio.fixture
+async def sandbox_digest_client(monkeypatch):
+    from httpx import ASGITransport, AsyncClient
+
+    from app import accounts as accounts_module
+    from app.main import app
+
+    s = accounts_module.settings
+    monkeypatch.setattr(s, "secondary_admin_username", "sandbox", raising=False)
+    monkeypatch.setattr(s, "secondary_admin_password", "sandbox-pass", raising=False)
+    monkeypatch.setattr(
+        s, "secondary_database_url", "sqlite+aiosqlite:///./secondary_digest.db", raising=False
+    )
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+        auth=("sandbox", "sandbox-pass"),
+    ) as ac:
+        yield ac
+
+
+@pytest.mark.asyncio
+async def test_send_blocked_for_secondary_account(sandbox_digest_client):
+    """Brevo credentials are shared; test data must not email real recipients."""
+    response = await sandbox_digest_client.post("/admin/digest/send")
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_preview_allowed_for_secondary_account(sandbox_digest_client):
+    response = await sandbox_digest_client.get("/admin/digest/preview")
+    assert response.status_code == 200
