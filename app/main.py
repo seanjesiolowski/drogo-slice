@@ -16,9 +16,9 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.accounts import PRIMARY, configured_accounts
+from app.accounts import PRIMARY, SECONDARY, configured_accounts
 from app.config import settings
-from app.database import Base, engine
+from app.database import Base, async_session, engine, sessionmaker_for_name
 from app.dependencies import get_db
 from app.observability import init_sentry
 from app.models.category import Category
@@ -91,16 +91,33 @@ app.include_router(reports.router)
 app.include_router(digest.router)
 
 
-@app.get("/health")
-async def health_check(db: AsyncSession = Depends(get_db)):
+async def _secondary_status() -> str:
+    """Report the secondary database without ever affecting /health's status code."""
+    if not any(account.name == SECONDARY for account in configured_accounts()):
+        return "not_configured"
     try:
-        await db.execute(text("SELECT 1"))
+        async with sessionmaker_for_name(SECONDARY)() as db:
+            await db.execute(text("SELECT 1"))
+        return "ok"
+    except Exception:
+        return "error"
+
+
+@app.get("/health")
+async def health_check():
+    # Pinned to the primary database. /health bypasses auth, so no account is
+    # on the request and routed get_db would correctly refuse. It is also
+    # Railway's deploy healthcheck, so a broken secondary must never fail it.
+    try:
+        async with async_session() as db:
+            await db.execute(text("SELECT 1"))
     except Exception:
         return JSONResponse(
             status_code=503,
             content={"status": "unhealthy", "database": "error"},
         )
-    return {"status": "healthy", "database": "ok"}
+
+    return {"status": "healthy", "database": "ok", "secondary": await _secondary_status()}
 
 
 @app.get("/api/backup")

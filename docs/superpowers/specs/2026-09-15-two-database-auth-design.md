@@ -131,8 +131,10 @@ commit `cf98a13`; before that fix an empty database crash-looped.
 
 ### 7. Testing
 
-The 71 existing tests pass untouched: `tests/conftest.py` overrides `get_db`
-wholesale, bypassing routing.
+The 71 existing tests pass untouched except for `tests/test_health.py`, which must
+change: one test asserts the exact `/health` body, and the other simulates failure
+by overriding `get_db`, which `/health` no longer uses. Everything else is
+unaffected because `tests/conftest.py` overrides `get_db` wholesale.
 
 New tests override the sessionmaker registry rather than `get_db`, so routing is
 genuinely exercised:

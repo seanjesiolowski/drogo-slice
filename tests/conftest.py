@@ -31,6 +31,18 @@ app.dependency_overrides[get_db] = override_get_db
 
 
 @pytest.fixture(autouse=True)
+def _pin_health_check_to_test_db(monkeypatch):
+    """/health is pinned directly to app.database's primary async_session,
+    bypassing the get_db override above (Task 6: routed get_db must not be
+    trusted for a route that runs with no account on the request). Point
+    that direct reference at the same in-memory test database as every
+    other route, so /health's primary check reflects test reality instead
+    of the unreachable production DATABASE_URL default.
+    """
+    monkeypatch.setattr("app.main.async_session", async_session_test)
+
+
+@pytest.fixture(autouse=True)
 def _clear_secondary_sessionmakers():
     """Stop one test's secondary database config leaking into the next via the cache."""
     from app.accounts import PRIMARY
