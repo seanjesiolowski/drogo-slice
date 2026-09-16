@@ -10,7 +10,7 @@ async def get_db(request: Request) -> AsyncGenerator[AsyncSession]:
     """Yield a session for the account that authenticated this request.
 
     Fails closed. A request with no account is a routing bug, and guessing
-    the primary database here is how sandbox writes would reach production
+    the primary database here is how outpost writes would reach production
     data, so this raises instead.
     """
     account = getattr(request.state, "account", None)

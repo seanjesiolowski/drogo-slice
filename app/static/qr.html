@@ -385,7 +385,9 @@ body.dark details summary:hover { color: #e8e0d4; }
 /* Print sheet styles (only active in print window) */
 .print-only { display: none; }
 
-nav form.logoff { display: inline; }
+/* The form must hug its button, or its line box makes the control
+   taller than everything beside it. */
+nav form.logoff { display: flex; align-items: center; }
 
 nav form.logoff button {
     font-family: inherit;
@@ -418,6 +420,63 @@ nav form.logoff button:active { transform: scale(0.94); background: #ddd5c8; }
 body.dark nav form.logoff button { color: #c4b5a4; background: #2c2420; border-color: #3b2f2f; }
 body.dark nav form.logoff button:hover { background: #3b2f2f; }
 body.dark .account-badge { color: #f0d5a8; background: #3b2f1c; border-color: #6b532c; }
+
+/* Every control in the header is the same height, so the row reads as one
+   strip rather than three sizes stacked side by side. The theme toggle is
+   square because it holds an icon, not a word. */
+nav a,
+nav .account-badge,
+nav .theme-toggle,
+nav form.logoff button {
+    height: 30px;
+    /* The global button rule sets min-height: 44px, and min-height beats
+       height -- without this the Log off button stands 14px taller than
+       everything beside it. */
+    min-height: auto;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-radius: 6px;
+    line-height: 1;
+}
+
+nav .theme-toggle {
+    width: 30px;
+    padding: 0;
+    font-size: 1rem;
+}
+
+/* The header holds five controls once the outpost badge appears, which is
+   more than a phone can fit on one line. Never let a label wrap -- that is
+   what would break the uniform height -- and instead let the nav drop below
+   the title and tighten up. */
+nav a,
+nav .account-badge,
+nav form.logoff button {
+    white-space: nowrap;
+}
+
+header { flex-wrap: wrap; row-gap: 10px; }
+header nav { flex-wrap: wrap; row-gap: 8px; }
+
+@media (max-width: 480px) {
+    header nav {
+        margin-left: 0;
+        width: 100%;
+        gap: 8px;
+    }
+
+    nav a,
+    nav .account-badge,
+    nav form.logoff button {
+        padding: 0 10px;
+        font-size: 0.8rem;
+    }
+
+    nav .account-badge { font-size: 0.7rem; }
+}
 </style>
 </head>
 <body>
@@ -767,15 +826,15 @@ function esc(s) {
 }
 </script>
 <script>
-// The badge calls out a non-production login. Production is the everyday
-// case and stays unlabelled; the sandbox is what you must never mistake
-// for the real inventory.
+// The badge calls out a non-production login. The home shop is the
+// everyday case and stays unlabelled; the outpost is what you must never
+// mistake for the Saint Drogo's inventory.
 fetch('/api/whoami')
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (data) {
         if (!data || data.account === 'primary') return;
         var badge = document.getElementById('accountBadge');
-        badge.textContent = 'Sandbox';
+        badge.textContent = 'Outpost';
         badge.style.display = '';
     })
     .catch(function () { /* the badge is a nicety; never break the page over it */ });
