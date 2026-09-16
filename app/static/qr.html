@@ -384,6 +384,40 @@ body.dark details summary:hover { color: #e8e0d4; }
 
 /* Print sheet styles (only active in print window) */
 .print-only { display: none; }
+
+nav form.logoff { display: inline; }
+
+nav form.logoff button {
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #5a4a3a;
+    background: #f0ebe3;
+    border: 1px solid #ddd5c8;
+    border-radius: 6px;
+    padding: 4px 12px;
+    width: auto;
+    cursor: pointer;
+}
+
+nav form.logoff button:hover { background: #e8e0d4; }
+nav form.logoff button:active { transform: scale(0.94); background: #ddd5c8; }
+
+.account-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #7a4b16;
+    background: #f6e5c8;
+    border: 1px solid #e0c391;
+    border-radius: 6px;
+    padding: 4px 9px;
+}
+
+body.dark nav form.logoff button { color: #c4b5a4; background: #2c2420; border-color: #3b2f2f; }
+body.dark nav form.logoff button:hover { background: #3b2f2f; }
+body.dark .account-badge { color: #f0d5a8; background: #3b2f1c; border-color: #6b532c; }
 </style>
 </head>
 <body>
@@ -394,7 +428,9 @@ body.dark details summary:hover { color: #e8e0d4; }
     <nav>
         <a href="/">Scan</a>
         <a href="/manage">Manage</a>
+        <span class="account-badge" id="accountBadge" style="display:none;"></span>
         <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" id="themeBtn"></button>
+        <form method="post" action="/logout" class="logoff"><button type="submit">Log off</button></form>
     </nav>
 </header>
 
@@ -729,6 +765,20 @@ function esc(s) {
     d.textContent = s;
     return d.innerHTML;
 }
+</script>
+<script>
+// The badge calls out a non-production login. Production is the everyday
+// case and stays unlabelled; the sandbox is what you must never mistake
+// for the real inventory.
+fetch('/api/whoami')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (data) {
+        if (!data || data.account === 'primary') return;
+        var badge = document.getElementById('accountBadge');
+        badge.textContent = 'Sandbox';
+        badge.style.display = '';
+    })
+    .catch(function () { /* the badge is a nicety; never break the page over it */ });
 </script>
 </body>
 </html>

@@ -4,13 +4,14 @@ import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import quote
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Form
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import RedirectResponse, Response
 
 from sqlalchemy import select
 from sqlalchemy import text
@@ -18,7 +19,8 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.accounts import PRIMARY, SECONDARY, configured_accounts
+from app import session
+from app.accounts import PRIMARY, SECONDARY, Account, configured_accounts
 from app.config import settings
 from app.database import Base, async_session, engine, sessionmaker_for_name
 from app.dependencies import get_db
@@ -48,6 +50,78 @@ app = FastAPI(
 )
 
 
+static_path = Path(__file__).parent / "static"
+
+PUBLIC_PATHS = {"/login", "/logout"}
+
+
+def authenticate(username: str, password: str) -> Account | None:
+    """Return the account these credentials belong to, or None."""
+    for account in configured_accounts():
+        # compare_digest rejects non-ASCII str with a TypeError; comparing
+        # the UTF-8 bytes instead makes an accented username a rejection
+        # (401) rather than an unhandled 500.
+        if secrets.compare_digest(
+            username.encode("utf-8"), account.username.encode("utf-8")
+        ) and secrets.compare_digest(
+            password.encode("utf-8"), account.password.encode("utf-8")
+        ):
+            return account
+    return None
+
+
+def _account_from_cookie(request: Request) -> str | None:
+    """The account named by a valid session cookie, if there is one.
+
+    A good signature is not enough. The account must still be configured:
+    a cookie issued while the secondary login existed must stop working
+    once that login is removed from the environment, rather than routing
+    its holder at a database that is no longer set up.
+    """
+    token = request.cookies.get(session.COOKIE_NAME)
+    if not token:
+        return None
+
+    name = session.verify(token, secret=session.current_secret())
+    if name is None:
+        return None
+    if not any(account.name == name for account in configured_accounts()):
+        return None
+    return name
+
+
+def _safe_next(raw: str | None) -> str:
+    r"""Where to send the browser after login -- only ever a path on this site.
+
+    An open redirect on a login form is a credential-phishing stepping
+    stone, so anything that could resolve to another origin becomes "/".
+    Backslash is rejected because some browsers normalise it to a slash,
+    making "/\evil.example" a protocol-relative URL.
+    """
+    if not raw or not raw.startswith("/"):
+        return "/"
+    if raw.startswith("//") or raw.startswith("/\\"):
+        return "/"
+    return raw
+
+
+def _wants_html_page(request: Request) -> bool:
+    """Is this a browser navigating to a page, rather than a tool or a fetch()?"""
+    return request.method == "GET" and "text/html" in request.headers.get("accept", "")
+
+
+def _login_redirect(request: Request) -> Response:
+    """Send a browser to the login form, remembering where it was headed.
+
+    Deliberately carries no WWW-Authenticate header: that is what would make
+    the browser throw its own Basic prompt over the top of the login page.
+    """
+    destination = request.url.path
+    if request.url.query:
+        destination = f"{destination}?{request.url.query}"
+    return RedirectResponse(f"/login?next={quote(destination, safe='')}", status_code=303)
+
+
 def _unauthorized_response() -> Response:
     return Response(
         "Unauthorized",
@@ -62,6 +136,22 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
             request.state.account = PRIMARY
             return await call_next(request)
 
+        if request.url.path in PUBLIC_PATHS:
+            return await call_next(request)
+
+        cookie_account = _account_from_cookie(request)
+        if cookie_account is not None:
+            request.state.account = cookie_account
+            return await call_next(request)
+
+        # A browser that has ever answered the native Basic prompt replays
+        # that credential forever, so honouring it here would undo every
+        # log-off: the cookie would clear and the next page load would sign
+        # the person straight back in. Pages authenticate by cookie only;
+        # the Basic header below is for curl, /docs and scripts.
+        if _wants_html_page(request):
+            return _login_redirect(request)
+
         auth = request.headers.get("Authorization", "")
         if not auth.startswith("Basic "):
             return _unauthorized_response()
@@ -72,19 +162,7 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
         except Exception:
             return _unauthorized_response()
 
-        matched = None
-        for account in configured_accounts():
-            # compare_digest rejects non-ASCII str with a TypeError; comparing
-            # the UTF-8 bytes instead makes an accented username a rejection
-            # (401) rather than an unhandled 500.
-            if secrets.compare_digest(
-                username.encode("utf-8"), account.username.encode("utf-8")
-            ) and secrets.compare_digest(
-                password.encode("utf-8"), account.password.encode("utf-8")
-            ):
-                matched = account
-                break
-
+        matched = authenticate(username, password)
         if matched is None:
             return _unauthorized_response()
 
@@ -93,6 +171,50 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
 
 
 app.add_middleware(BasicAuthMiddleware)
+
+
+@app.get("/login")
+async def login_page():
+    return FileResponse(
+        static_path / "login.html", media_type="text/html", headers={"Cache-Control": "no-cache"}
+    )
+
+
+@app.post("/logout")
+async def logout():
+    response = RedirectResponse("/login", status_code=303)
+    response.delete_cookie(session.COOKIE_NAME, httponly=True, samesite="lax")
+    return response
+
+
+@app.post("/login")
+async def login(request: Request, username: str = Form(""), password: str = Form("")):
+    destination = _safe_next(request.query_params.get("next"))
+
+    account = authenticate(username, password)
+    if account is None:
+        # Back to the form, never a 401: a 401 here carries WWW-Authenticate
+        # and the browser would answer it with its own prompt.
+        return RedirectResponse(
+            f"/login?error=1&next={quote(destination, safe='')}", status_code=303
+        )
+
+    response = RedirectResponse(destination, status_code=303)
+    response.set_cookie(
+        session.COOKIE_NAME,
+        session.issue(account.name, secret=session.current_secret()),
+        max_age=session.ONE_YEAR,
+        httponly=True,
+        samesite="lax",
+        secure=request.url.scheme == "https",
+    )
+    return response
+
+
+@app.get("/api/whoami")
+async def whoami(request: Request):
+    """Which login the caller is using, so the page can say so."""
+    return {"account": request.state.account}
 
 
 @app.exception_handler(OperationalError)
@@ -217,8 +339,6 @@ async def reset_database(confirm: str = "", db: AsyncSession = Depends(get_db)):
     return {"status": "reset", "message": "All data wiped, IDs restart at 1"}
 
 
-# Serve index.html at root
-static_path = Path(__file__).parent / "static"
 index_path = static_path / "index.html"
 
 
