@@ -50,9 +50,10 @@ when you need one reachable from outside your machine, such as on a phone.
 
 ### Setting it up on Railway
 
-1. In the same Railway project as the app, add a second Postgres database (New →
-   Database → Postgres). This creates it as its own service, separate from the app
-   service and from the production Postgres.
+1. In the same Railway project as the app, add a second Postgres database (in the
+   Railway dashboard, roughly "New" → "Database" → "Add PostgreSQL" — the exact
+   wording may differ depending on Railway's current UI). This creates it as its
+   own service, separate from the app service and from the production Postgres.
 2. Railway does **not** wire a new database into your app automatically — adding a
    Postgres only creates the service, and you still need to reference it. On the app
    service, add an environment variable `SECONDARY_DATABASE_URL` and set its value to
@@ -108,11 +109,24 @@ means the three `SECONDARY_*` variables aren't all set.
 
 ### Troubleshooting: `socket.gaierror: Name or service not known`
 
-If a deploy crash-loops with this error at boot, a database URL is missing or its
-Railway reference is broken. When `DATABASE_URL` (or `SECONDARY_DATABASE_URL`) isn't
-set, the app falls back to the docker-compose default host `db:5432`, which resolves
-nowhere outside `docker compose` — the DNS lookup for host `db` fails on Railway.
-The migration step that `start.sh` runs (`python -m app.bootstrap`) prints an
-explicit warning at boot when it detects this fallback host, so check the deploy
-logs first. The error is not the database being down; it's the environment
-variable being absent or its reference pointing at the wrong service name.
+If a deploy crash-loops with this error at boot, `DATABASE_URL` is missing or its
+Railway reference is broken. When `DATABASE_URL` isn't set, the app falls back to
+the docker-compose default host `db:5432`, which resolves nowhere outside
+`docker compose` — the DNS lookup for host `db` fails on Railway. The migration
+step that `start.sh` runs (`python -m app.bootstrap`) prints an explicit warning at
+boot when it detects this fallback host, so check the deploy logs first. The error
+is not the database being down; it's the environment variable being absent or its
+reference pointing at the wrong service name.
+
+`SECONDARY_DATABASE_URL` has no such default — it's blank unless set, and a blank
+value is exactly what disables the second login (see the all-three-or-nothing rule
+above). So this specific error can only happen on the secondary side if
+`SECONDARY_DATABASE_URL` is *set* to something that resolves to host `db` — for
+example an accidentally copied primary URL, or a Railway reference left in place
+as a literal string that never resolved. It never happens just from leaving it
+blank.
+
+If the second login returns 401 and there's nothing about it in the deploy logs,
+that's the blank case: one of the three `SECONDARY_*` variables is missing, so the
+account doesn't exist rather than failing loudly. Check all three are set before
+looking for a crash that won't be there.
