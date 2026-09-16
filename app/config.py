@@ -7,6 +7,11 @@ class Settings(BaseSettings):
     admin_username: str = "admin"
     admin_password: str = "changeme"
 
+    # Signs the browser session cookie. Left unset, a random secret is
+    # generated at boot, which simply means a restart or redeploy signs
+    # everyone out. Set it to keep sessions across deploys.
+    session_secret: str = ""
+
     secondary_database_url: str = ""
     secondary_admin_username: str = ""
     secondary_admin_password: str = ""
