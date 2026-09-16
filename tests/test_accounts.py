@@ -1,7 +1,7 @@
 import pytest
 
 from app import accounts as accounts_module
-from app.accounts import PRIMARY, SECONDARY, configured_accounts
+from app.accounts import PRIMARY, SECONDARY, Account, configured_accounts
 
 
 @pytest.fixture
@@ -58,3 +58,58 @@ def test_secondary_url_gets_asyncpg_scheme():
 
     s = Settings(secondary_database_url="postgresql://user:pw@host:5432/db")
     assert s.secondary_database_url == "postgresql+asyncpg://user:pw@host:5432/db"
+
+
+def test_repr_never_contains_password_or_database_url():
+    """An unhandled exception can put an Account in a Sentry frame-locals dump.
+
+    Sentry's include_local_variables captures repr() of frame locals, so the
+    dataclass repr must never expose the login password or the database URL
+    (which itself embeds the database's own password).
+    """
+    account = Account(
+        name=PRIMARY,
+        username="admin",
+        password="sw0rdfish-login-secret",
+        database_url="postgresql+asyncpg://admin:sw0rdfish-db-secret@localhost:5432/shop",
+    )
+
+    rendered = repr(account)
+
+    assert "sw0rdfish-login-secret" not in rendered
+    assert "sw0rdfish-db-secret" not in rendered
+    assert "postgresql" not in rendered
+
+
+def test_repr_still_shows_non_secret_fields():
+    account = Account(
+        name=PRIMARY,
+        username="admin",
+        password="secret",
+        database_url="sqlite+aiosqlite:///x.db",
+    )
+
+    rendered = repr(account)
+
+    assert "primary" in rendered
+    assert "admin" in rendered
+
+
+def test_configured_accounts_refuses_secondary_matching_primary_url(settings, monkeypatch, capsys):
+    """A copy-pasted secondary URL identical to the primary must not grant
+    the sandbox login write access to the live production database."""
+    shared_url = "postgresql+asyncpg://admin:pw@prod-host:5432/shop"
+    monkeypatch.setattr(settings, "database_url", shared_url)
+    monkeypatch.setattr(settings, "secondary_admin_username", "sandbox")
+    monkeypatch.setattr(settings, "secondary_admin_password", "sandbox-pass")
+    monkeypatch.setattr(settings, "secondary_database_url", shared_url)
+
+    result = configured_accounts()
+
+    assert [a.name for a in result] == [PRIMARY]
+
+    err = capsys.readouterr().err
+    assert "same" in err.lower() or "match" in err.lower() or "identical" in err.lower()
+    assert shared_url not in err
+    assert "prod-host" not in err
+    assert "pw" not in err

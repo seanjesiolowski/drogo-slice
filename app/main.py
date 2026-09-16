@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import secrets
 from contextlib import asynccontextmanager
@@ -29,6 +30,8 @@ from app.routers import categories, digest, items, reports
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Primary only, by design: the secondary database's schema is brought up
+    # to date by alembic via app/bootstrap.py at boot, not by create_all here.
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -71,8 +74,13 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
 
         matched = None
         for account in configured_accounts():
-            if secrets.compare_digest(username, account.username) and secrets.compare_digest(
-                password, account.password
+            # compare_digest rejects non-ASCII str with a TypeError; comparing
+            # the UTF-8 bytes instead makes an accented username a rejection
+            # (401) rather than an unhandled 500.
+            if secrets.compare_digest(
+                username.encode("utf-8"), account.username.encode("utf-8")
+            ) and secrets.compare_digest(
+                password.encode("utf-8"), account.password.encode("utf-8")
             ):
                 matched = account
                 break
@@ -121,8 +129,9 @@ async def _secondary_status() -> str:
     if not any(account.name == SECONDARY for account in configured_accounts()):
         return "not_configured"
     try:
-        async with sessionmaker_for_name(SECONDARY)() as db:
-            await db.execute(text("SELECT 1"))
+        async with asyncio.timeout(2):
+            async with sessionmaker_for_name(SECONDARY)() as db:
+                await db.execute(text("SELECT 1"))
         return "ok"
     except Exception:
         return "error"

@@ -187,6 +187,23 @@ async def test_mixed_credentials_rejected(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_non_ascii_username_returns_401_not_500(unauthenticated_client: AsyncClient):
+    """secrets.compare_digest raises TypeError on non-ASCII str, not bytes.
+
+    A non-ASCII character typed into the browser's login prompt must be
+    rejected as bad credentials, not crash the request handler.
+    """
+    import base64
+
+    non_ascii_auth = base64.b64encode("jöe:whatever".encode("utf-8")).decode()
+    response = await unauthenticated_client.get(
+        "/api/categories/",
+        headers={"Authorization": f"Basic {non_ascii_auth}"},
+    )
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_empty_credentials_rejected(unauthenticated_client: AsyncClient):
     """Blank username and password must never authenticate."""
     import base64
@@ -214,7 +231,7 @@ async def test_health_endpoint_sets_account_for_real_get_db():
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             response = await ac.get("/health")
-        assert response.status_code != 500
+        assert response.status_code == 200
     finally:
         if original is not None:
             app.dependency_overrides[get_db] = original

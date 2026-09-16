@@ -35,3 +35,4 @@ def test_init_sentry_initializes_with_dsn(monkeypatch):
     assert kwargs["environment"] == "production"
     assert kwargs["traces_sample_rate"] == 0.1
     assert kwargs["send_default_pii"] is False
+    assert kwargs["include_local_variables"] is False

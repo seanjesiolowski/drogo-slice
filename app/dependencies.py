@@ -14,7 +14,7 @@ async def get_db(request: Request) -> AsyncGenerator[AsyncSession]:
     data, so this raises instead.
     """
     account = getattr(request.state, "account", None)
-    if account is None:
+    if not account:
         raise RuntimeError(
             "No account on request; get_db will not guess which database to use"
         )
