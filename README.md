@@ -32,9 +32,9 @@ For subsequent sessions, just run `docker compose up` (no `--build` needed).
 docker compose exec api pytest
 ```
 
-## Outpost environment
+## Rootlet environment
 
-The outpost is a second login on this same app, backed by its own Postgres database.
+The rootlet is a second login on this same app, backed by its own Postgres database.
 It is a full copy of Drogo Slice, not a cut-down one — same app, same features,
 its own inventory. There is one app service, not two: the second login just
 points at a different database, so nothing done under it can reach the
@@ -47,8 +47,8 @@ databases), not a permissions check.
 Pages are behind a login form at `/login`, and a successful sign-in sets a
 signed cookie that lasts a year. "Log off" in the header clears it and returns
 you to the form, which is how you switch between the home shop's login and the
-outpost's without quitting the browser. When you are signed in to the outpost,
-an **Outpost** badge sits in the header — Saint Drogo's is the everyday case
+rootlet's without quitting the browser. When you are signed in to the rootlet,
+a **Rootlet** badge sits in the header — Saint Drogo's is the everyday case
 and stays unlabelled.
 
 Set `SESSION_SECRET` to any long random string to keep people signed in across
