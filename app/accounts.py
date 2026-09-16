@@ -24,7 +24,7 @@ def configured_accounts() -> list[Account]:
     database URL are all set. Partial configuration is treated as absent so
     that blank credentials can never authenticate. The secondary is also
     treated as absent if its database URL is identical to the primary's --
-    a copy-paste of that URL would otherwise give the outpost login full
+    a copy-paste of that URL would otherwise give the rootlet login full
     read/write access to the live production database.
     """
     accounts = [
@@ -45,7 +45,7 @@ def configured_accounts() -> list[Account]:
             print(
                 "[accounts] WARNING: secondary database URL is identical to the "
                 "primary's; refusing to configure the secondary account so a "
-                "misconfigured outpost login cannot reach production data.",
+                "misconfigured rootlet login cannot reach production data.",
                 file=sys.stderr,
             )
         else:

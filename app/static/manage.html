@@ -533,7 +533,7 @@ nav .theme-toggle {
     font-size: 1rem;
 }
 
-/* The header holds five controls once the outpost badge appears, which is
+/* The header holds five controls once the rootlet badge appears, which is
    more than a phone can fit on one line. Never let a label wrap -- that is
    what would break the uniform height -- and instead let the nav drop below
    the title and tighten up. */
@@ -983,14 +983,14 @@ function esc(s) {
 </script>
 <script>
 // The badge calls out a non-production login. The home shop is the
-// everyday case and stays unlabelled; the outpost is what you must never
+// everyday case and stays unlabelled; the rootlet is what you must never
 // mistake for the Saint Drogo's inventory.
 fetch('/api/whoami')
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (data) {
         if (!data || data.account === 'primary') return;
         var badge = document.getElementById('accountBadge');
-        badge.textContent = 'Outpost';
+        badge.textContent = 'Rootlet';
         badge.style.display = '';
     })
     .catch(function () { /* the badge is a nicety; never break the page over it */ });
