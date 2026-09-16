@@ -40,32 +40,3 @@ its own inventory. There is one app service, not two: the second login just
 points at a different database, so nothing done under it can reach the
 production inventory at Saint Drogo's. Isolation is physical (separate
 databases), not a permissions check.
-
-
-## Signing in and switching accounts
-
-Pages are behind a login form at `/login`, and a successful sign-in sets a
-signed cookie that lasts a year. "Log off" in the header clears it and returns
-you to the form, which is how you switch between the home shop's login and the
-rootlet's without quitting the browser. When you are signed in to the rootlet,
-a **Rootlet** badge sits in the header — Saint Drogo's is the everyday case
-and stays unlabelled.
-
-Set `SESSION_SECRET` to any long random string to keep people signed in across
-deploys. Left blank, the app generates one at boot, so every restart signs
-everyone out.
-
-The API still accepts HTTP Basic auth, so `curl`, scripts and `/docs` keep
-working unchanged:
-
-```bash
-curl -u "$ADMIN_USERNAME:$ADMIN_PASSWORD" http://localhost:8000/api/items/
-```
-
-Page loads deliberately ignore Basic credentials and use the cookie only.
-Browsers replay an answered Basic prompt forever, so honouring it on page loads
-would undo every log-off — clear the cookie, and the next page load would sign
-you straight back in. One consequence worth knowing: logging off ends the
-browser session, but it does not revoke the password. Credentials already
-cached in a browser can still reach `/api/...` directly until that browser is
-closed.
