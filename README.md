@@ -34,42 +34,85 @@ docker compose exec api pytest
 
 ## Sandbox environment
 
-A sandbox is a second, separate deployment of this same app with its own database
-and its own login. Because the data lives in a different database entirely, there is
-no way for experiments in the sandbox to reach the production inventory at Saint
-Drogo's.
+The sandbox is a second login on this same app, backed by its own Postgres database.
+There is one app service, not two — the second login just points at a different
+database, so nothing done under it can reach the production inventory at Saint
+Drogo's. Isolation is physical (separate databases), not a permissions check.
+
+The second login only exists when all three of `SECONDARY_DATABASE_URL`,
+`SECONDARY_ADMIN_USERNAME` and `SECONDARY_ADMIN_PASSWORD` are set. If any one of
+them is blank, the account doesn't exist and its credentials get a 401 like any
+other wrong login.
 
 For day-to-day development, the local `docker compose up` stack above already gives
-you this — it runs against its own Postgres volume. Set up a deployed sandbox only
+you an isolated database to experiment in. Set up the sandbox login on Railway only
 when you need one reachable from outside your machine, such as on a phone.
 
-### Setting one up on Railway
+### Setting it up on Railway
 
-1. Create a new Railway service pointed at this repo. It builds from the same
-   `Dockerfile`, so no code or config changes are needed.
-2. Add a Postgres database to that service and let Railway inject its `DATABASE_URL`.
-   This must be the sandbox's own database — never the production one.
-3. Set the environment variables below on the sandbox service.
-4. Deploy. `start.sh` runs the full migration history against the empty database on
-   first boot, so there is nothing to initialise by hand.
+1. In the same Railway project as the app, add a second Postgres database (New →
+   Database → Postgres). This creates it as its own service, separate from the app
+   service and from the production Postgres.
+2. Railway does **not** wire a new database into your app automatically — adding a
+   Postgres only creates the service, and you still need to reference it. On the app
+   service, add an environment variable `SECONDARY_DATABASE_URL` and set its value to
+   a reference of the new Postgres's `DATABASE_URL`, e.g.
+   `${{Postgres-2.DATABASE_URL}}`, substituting whatever Railway actually named that
+   service (check the reference variable it offers you when adding it — the exact
+   name matters).
+3. Set `SECONDARY_ADMIN_USERNAME` and `SECONDARY_ADMIN_PASSWORD` on the app service
+   to your choice of sandbox credentials. All three variables must be present for the
+   second login to exist.
+4. Deploy. `start.sh` migrates every configured database at boot, including the
+   secondary one, so there is nothing to initialise by hand. If the secondary
+   migration fails, it's logged and skipped — the app still starts and serves the
+   primary login normally; only the primary database failing is fatal.
 
 | Variable | Value | Why |
 |---|---|---|
-| `DATABASE_URL` | the sandbox Postgres | Injected by Railway. The whole isolation guarantee rests on this pointing somewhere other than production. |
-| `ADMIN_USERNAME` | your choice | A separate login, so sandbox credentials are not production credentials. |
-| `ADMIN_PASSWORD` | your choice | Same. |
-| `BREVO_API_KEY` | leave blank | Blank disables digest sending. Without this, test data could email real recipients. |
-| `SENTRY_ENVIRONMENT` | `sandbox` | Keeps experimental errors from being mistaken for production incidents. |
-| `SENTRY_DSN` | leave blank | Optional. Blank turns off error tracking for the sandbox entirely. |
+| `SECONDARY_DATABASE_URL` | reference to the second Postgres | Must point at the sandbox database, never the production one. All three `SECONDARY_*` variables must be set or the login doesn't exist. |
+| `SECONDARY_ADMIN_USERNAME` | your choice | A separate login, so sandbox credentials are not production credentials. |
+| `SECONDARY_ADMIN_PASSWORD` | your choice | Same. |
 
-The sandbox comes up with an empty inventory, ready to experiment in.
+Brevo and Sentry settings are shared with the primary login — there's no separate
+configuration for them. That's also why `/admin/digest/send` is blocked entirely
+under the sandbox login (see below).
+
+The sandbox database comes up empty, ready to experiment in.
 
 ### Working in the sandbox
 
 Add a few categories and items by hand through the UI to get started. There is no
-import endpoint — `/api/backup` exports production data but nothing consumes that
-file, so sandbox data is entered manually.
+import endpoint — `/api/backup` under the sandbox login exports only the sandbox
+database (empty at first), so sandbox data is entered manually.
 
-`POST /api/reset?confirm=RESET` wipes all items and categories and restarts IDs at 1.
-That is safe and useful in the sandbox, and being able to run it freely is much of the
-point of having one.
+`POST /api/reset?confirm=RESET` under the sandbox login wipes only the sandbox
+database's items and categories and restarts IDs at 1. It never touches production
+data, because it operates on whichever database the logged-in account owns.
+
+`/admin/digest/preview` works under the sandbox login — it just renders HTML from
+whatever's in the sandbox database. `/admin/digest/send` returns 403 under the
+sandbox login: the Brevo credentials are shared with production, so sending is
+restricted to the primary login to keep test digests from reaching the shop's real
+recipients.
+
+`/health` reports the sandbox database's status separately, as
+`"secondary": "ok" | "error" | "not_configured"`. This never changes `/health`'s
+status code — that code reflects the primary database only, so a broken sandbox
+can never fail a Railway deploy healthcheck.
+
+If a request under the sandbox login returns `503`, that means its database
+(`SECONDARY_DATABASE_URL`) is configured but currently unreachable — the response
+names the account. That's distinct from `/health` showing `"not_configured"`, which
+means the three `SECONDARY_*` variables aren't all set.
+
+### Troubleshooting: `socket.gaierror: Name or service not known`
+
+If a deploy crash-loops with this error at boot, a database URL is missing or its
+Railway reference is broken. When `DATABASE_URL` (or `SECONDARY_DATABASE_URL`) isn't
+set, the app falls back to the docker-compose default host `db:5432`, which resolves
+nowhere outside `docker compose` — the DNS lookup for host `db` fails on Railway.
+The migration step that `start.sh` runs (`python -m app.bootstrap`) prints an
+explicit warning at boot when it detects this fallback host, so check the deploy
+logs first. The error is not the database being down; it's the environment
+variable being absent or its reference pointing at the wrong service name.
